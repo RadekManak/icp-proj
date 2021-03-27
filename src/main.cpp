@@ -1,7 +1,11 @@
 #include "mqtt/async_client.h"
+#include "mainwindow.h"
+#include "QtWidgets"
 
 int main(int argc, char* argv[])
 {
-    std::cout << mqtt::VERSION_STR << std::endl;
-    return 0;
+    QApplication app(argc, argv);
+    MainWindow mainWindow;
+    mainWindow.show();
+    return QApplication::exec();
 }
