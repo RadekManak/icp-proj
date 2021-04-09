@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include "Mqttclient.h"
+#include <QStandardItemModel>
 
 namespace Ui {
 class MainWindow;

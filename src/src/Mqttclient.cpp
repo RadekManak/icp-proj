@@ -1,9 +1,11 @@
 #include "Mqttclient.h"
 #include <QtGlobal>
 #include <utility>
+#include <sstream>
 
 Mqttclient::Mqttclient(){
-        connOpts = mqtt::connect_options_builder()
+    itemModel = std::make_unique<QStandardItemModel>();
+    connOpts = mqtt::connect_options_builder()
         .clean_session(true)
         .finalize();
 }
@@ -30,13 +32,18 @@ void action_listener::on_success(const mqtt::token& tok) {
 
 action_listener::action_listener(std::string name) : name_(std::move(name)) {}
 
-void Callback::on_failure(const mqtt::token &asyncActionToken) {
+// Re-connection failure
+void Mqttclient::on_failure(const mqtt::token &asyncActionToken) {
 }
 
-void Callback::on_success(const mqtt::token &asyncActionToken) {
+void Mqttclient::on_success(const mqtt::token &asyncActionToken) {
 }
 
-void Callback::connection_lost(const std::string& cause){
+void Mqttclient::connected(const std::string& what) {
+    client->subscribe(TOPIC, QOS);
+}
+
+void Mqttclient::connection_lost(const std::string& cause){
     std::cerr << "Connection lost\n";
     if (!cause.empty()){
         std::cout << "\tcause: " << cause << "\n";
@@ -44,14 +51,30 @@ void Callback::connection_lost(const std::string& cause){
 }
 
 // Callback for when a message arrives.
-void Callback::message_arrived(mqtt::const_message_ptr msg) {
-    std::cout << "Message arrived" << std::endl;
-    std::cout << "\ttopic: '" << msg->get_topic() << "'" << std::endl;
-    std::cout << "\tpayload: '" << msg->to_string() << "'\n" << std::endl;
+void Mqttclient::message_arrived(mqtt::const_message_ptr msg) {
+    std::stringstream s(msg->get_topic());
+    std::string token;
+    QStandardItem *item = itemModel->invisibleRootItem();
+    while (std::getline(s, token, '/')) {
+        if (item->rowCount() != 0){
+            for (int i = 0; i < item->rowCount();i++){
+                if (item->child(i)->text().toStdString() == token){
+                    item = item->child(i);
+                    break;
+                } else if (i == item->rowCount()-1){
+                    auto *newitem = new QStandardItem(token.c_str());
+                    item->appendRow(newitem);
+                    item = newitem;
+                    break;
+                }
+            }
+        } else {
+            auto *newitem = new QStandardItem(token.c_str());
+            item->appendRow(newitem);
+            item = newitem;
+        }
+    }
 }
-
-Callback::Callback(mqtt::async_client& cli, mqtt::connect_options& connOpts)
-        : nretry_(0), cli_(cli), connOpts_(connOpts), subListener_("Subscription") {}
 
 bool Mqttclient::connect(const std::string& server_address, std::string server_port) {
     std::string client_id = "icp-mqtt-explorer-vut-fit";
@@ -59,15 +82,11 @@ bool Mqttclient::connect(const std::string& server_address, std::string server_p
         server_port = "1883";
     }
     client = std::make_unique<mqtt::async_client>(server_address+":"+server_port, client_id);
-
-    callback = std::make_unique<Callback>(*client, connOpts);
-    client->set_callback(*callback);
-
+    client->set_callback(*this);
 
     try {
         std::cout << "Connecting to the MQTT server..." << std::flush;
-        client->connect(connOpts, nullptr, *callback)->wait();
-        client->subscribe(TOPIC, QOS);
+        client->connect(connOpts, nullptr, *this)->wait();
     }
     catch (const mqtt::exception& exc) {
         std::cerr << "\nERROR: Unable to connect to MQTT server: '"
@@ -77,9 +96,8 @@ bool Mqttclient::connect(const std::string& server_address, std::string server_p
     return true;
 }
 
-bool Mqttclient::stop() {
+void Mqttclient::stop() {
     if (client){
         client->stop_consuming();
     }
-    return true;
 }

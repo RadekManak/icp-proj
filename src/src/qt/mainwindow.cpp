@@ -9,7 +9,8 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    connect(ui->connect_button, &QPushButton::clicked, this, [=](){connectAction();});
+    connect(ui->connect_button, &QPushButton::clicked, this, [&](){connectAction();});
+    ui->treeView->setHeaderHidden(true);
 }
 
 MainWindow::~MainWindow()
@@ -19,6 +20,7 @@ MainWindow::~MainWindow()
 
 bool MainWindow::setClient(std::shared_ptr<Mqttclient> client) {
     mqttclient = std::move(client);
+    ui->treeView->setModel(mqttclient->itemModel.get());
     return true;
 }
 
