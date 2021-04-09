@@ -10,6 +10,12 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     connect(ui->connect_button, &QPushButton::clicked, this, [&](){connectAction();});
+    connect(ui->pushButton_disconnect, &QPushButton::clicked, this, [&](){disconnectAction();});
+    connect(ui->pushButton_disconnect_2, &QPushButton::clicked, this, [&](){disconnectAction();});
+    connect(ui->pushButton_explorer, &QPushButton::clicked, this,
+            [&](){ui->stackedWidget->setCurrentWidget(ui->explorer);});
+    connect(ui->pushButton_dashboard, &QPushButton::clicked, this,
+            [&](){ui->stackedWidget->setCurrentWidget(ui->dashboard);});
     ui->treeView->setHeaderHidden(true);
 }
 
@@ -27,6 +33,7 @@ bool MainWindow::setClient(std::shared_ptr<Mqttclient> client) {
 void MainWindow::connectAction() {
     try {
         mqttclient->connect(ui->lineEdit_host->text().toStdString(), ui->lineEdit_port->text().toStdString());
+        ui->treeView->setModel(mqttclient->itemModel.get());
         ui->stackedWidget->setCurrentWidget(ui->explorer);
     } catch (mqtt::exception& error){
         QMessageBox errorBox;
@@ -37,6 +44,14 @@ void MainWindow::connectAction() {
     }
 }
 
+/**
+ * Closes any active connection and switches back to login view.
+ */
+void MainWindow::disconnectAction()
+{
+    mqttclient->stop();
+    ui->stackedWidget->setCurrentWidget(ui->login);
+}
 /**
  * Closes any active connection on window close.
  */

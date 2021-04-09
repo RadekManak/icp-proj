@@ -24,6 +24,8 @@ private:
     Ui::MainWindow *ui;
 
     void closeEvent(QCloseEvent *event) override;
+
+    void disconnectAction();
 };
 
 #endif // MAINWINDOW_H

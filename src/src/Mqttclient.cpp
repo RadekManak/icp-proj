@@ -83,6 +83,7 @@ bool Mqttclient::connect(const std::string& server_address, std::string server_p
     }
     client = std::make_unique<mqtt::async_client>(server_address+":"+server_port, client_id);
     client->set_callback(*this);
+    itemModel  = std::make_unique<QStandardItemModel>();
 
     try {
         std::cout << "Connecting to the MQTT server..." << std::flush;
