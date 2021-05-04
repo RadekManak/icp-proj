@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(projekt)
+project(mqtt-explorer-fit)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_AUTOMOC ON)
@@ -11,6 +11,10 @@ set(REQUIRED_LIBS Core Gui Widgets)
 set(REQUIRED_LIBS_QUALIFIED Qt5::Core Qt5::Gui Qt5::Widgets)
 add_executable(${PROJECT_NAME} main.cpp src/qt/mainwindow.cpp src/Mqttclient.cpp)
 target_include_directories(${PROJECT_NAME} PUBLIC src src/qt)
+
+add_executable(trafficSimulator src/trafficSimulator.cpp)
+set_property(TARGET trafficSimulator PROPERTY CXX_STANDARD 14)
+target_link_libraries(trafficSimulator PRIVATE PahoMqttCpp::paho-mqttpp3-static)
 
 # Include QT from system
 find_package(Qt${QT_VERSION} COMPONENTS ${REQUIRED_LIBS} REQUIRED)
