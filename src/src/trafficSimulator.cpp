@@ -1,8 +1,10 @@
-// file: test.cpp
+// file: trafficSimulator.cpp
 // specification: ICP project 2021 variant 1
 
+#include <iostream>
 #include <string>
 #include <sstream>
+#include <fstream>
 #include <iomanip>
 #include <atomic>
 #include <queue>
@@ -10,11 +12,6 @@
 #include <mutex>
 #include <condition_variable>
 #include "mqtt/async_client.h"
-
-//CLIENT
-const std::string SERVER_ADDRESS { "localhost:1883" };
-const std::string CLIENT_ID { "test" };
-const int  QOS = 1;
 
 //THREAD COMMAND PASSING
 std::atomic <int> cmd_valve = {-1};
@@ -84,8 +81,8 @@ class callback : public virtual mqtt::callback{
 			std::string cmd = stream.str();
 			if(cmd.substr(0, 4) == "set "){
 				try{
-  					int val = stoi(cmd.substr(4, cmd.length() - 4));
-  					std::cout << "Thermostat received set command" << std::endl;
+					int val = stoi(cmd.substr(4, cmd.length() - 4));
+					std::cout << "Thermostat received set command" << std::endl;
 					cmd_ts = {val};
 				}
 				catch(std::invalid_argument){
@@ -101,58 +98,20 @@ class callback : public virtual mqtt::callback{
 	}
 };
 
+
 //////////////////////////////////////////   SENSORS   //////////////////////////////////////////
-/////// thermometer
-const char* THERM_NAME = "thermometer";
-const int THERM_MIN = -20;  //celsius
-const int THERM_MAX = 35;
-
-/////// hygrometer
-const char* HYGRO_NAME = "hygrometer";
-const int HYGRO_MIN = 35; //percent water
-const int HYGRO_MAX = 65;
-
-/////// wattmeter
-const char* WATT_NAME = "wattmeter";
-const int WATT_MIN = 0; //watts
-const int WATT_MAX = 800;
-
-/////// PIR sensor
-const char* PIR_NAME = "PIR sensor";
-const float PIR_MIN = 2.2;  //volts
-const float PIR_MAX = 5.1;
-
-/////// radar
-const char* I_RADAR_NAME = "radar/In-phase";
-const char* Q_RADAR_NAME = "radar/Quadrature";
-const float I_MIN = 1.5;  //volts
-const float I_MAX = 3.5;
-const float Q_MIN = 1.5;  //volts
-const float Q_MAX = 3.5;
-
-/////// door switch
-const char* DS_NAME = "door switch";
-
-/////// valve
-const char* VALVE_NAME = "valve/state";
-
-/////// thermostat
-const char* TS_NAME = "thermostat/temp";
-const int TS_MIN = -20; //celsius
-const int TS_MAX = 35;
-
-void intsensor(SafeQueue * Q, const char* topic, const int min, const int max){
+void intsensor(SafeQueue * Q, const char* topic, const int min, const int max, const int period){
 	srand(time(0));
 	int range;
 	if(min < 0 && max >= 0) range = max - min;
 	else if(min < 0 && max < 0) range = -1*(max - min);
 	else range = max - min;
-  
-	int step = range / 50; //defines value by which the result changes each iteration 
+
+	int step = range / 50;	//defines value by which the result changes each iteration 
 	step = (step > 0)? step : 1;
 
-	int value = std::rand() % (range + 1) + min;  //set initial value in range
-  
+	int value = std::rand() % (range + 1) + min;	//set initial value in range
+
 	mqtt::message_ptr msg;
 	while(true){
 		if(rand() % 2){
@@ -165,23 +124,23 @@ void intsensor(SafeQueue * Q, const char* topic, const int min, const int max){
 		}
 		msg = mqtt::make_message(topic, std::to_string(value));
 		Q->enqueue(msg);
-		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+		std::this_thread::sleep_for(std::chrono::milliseconds(period));
 	}
 }
 
-void floatsensor(SafeQueue * Q, const char* topic, const float min, const float max){
+void floatsensor(SafeQueue * Q, const char* topic, const float min, const float max, const int period){
 	srand(time(0));
 	float range;
 	if(min < 0 && max >= 0) range = max - min;
 	else if(min < 0 && max < 0) range = -1*(max - min);
 	else range = max - min;
 
-	float step = range / 50; //defines value by which the result changes each iteration
-	step = ((float )((int)(step * 10))) / 10; //round to one decimal
+	float step = range / 50;	//defines value by which the result changes each iteration
+	step = ((float )((int)(step * 10))) / 10;	//round to one decimal
 	step = (step > 0.1)? step : 0.1;
 
 	float value = min + static_cast <float> (rand()) / ( static_cast <float> (RAND_MAX/(range)));
-	value = ((float )((int)(value * 10))) / 10; //set initial value in range
+	value = ((float )((int)(value * 10))) / 10;	//set initial value in range
 
 	std::stringstream stream;
 	mqtt::message_ptr msg;
@@ -195,22 +154,22 @@ void floatsensor(SafeQueue * Q, const char* topic, const float min, const float 
 			else value -= step;
 		}
 
-		stream << std::fixed << std::setprecision(1) << value;  //format
+		stream << std::fixed << std::setprecision(1) << value;	//format
 		msg = mqtt::make_message(topic, stream.str());
 		Q->enqueue(msg);
-		stream.str(std::string());  //empty stream
-		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+		stream.str(std::string());	//empty stream
+		std::this_thread::sleep_for(std::chrono::milliseconds(period));
 	}
 }
 
-void door_switch(SafeQueue * Q, const char* topic){
+void door_switch(SafeQueue * Q, const char* topic, const int period_min, const int period_max){
 	mqtt::message_ptr msg = mqtt::make_message(topic, "closed");
 	bool opened = false;	//state of door switch
-	Q->enqueue(msg);  //publish initial state
+	Q->enqueue(msg);	//publish initial state
 
 	int cmd;
 	while(true){
-		std::this_thread::sleep_for(std::chrono::milliseconds(rand() % 10000 + 2000));
+		std::this_thread::sleep_for(std::chrono::milliseconds(rand() % (period_max - period_min + 1) + period_min));
 		if(opened){
 			msg = mqtt::make_message(topic, "closed");
 			opened = false;
@@ -225,7 +184,7 @@ void door_switch(SafeQueue * Q, const char* topic){
 
 void valve(SafeQueue * Q, const char* topic){
 	mqtt::message_ptr msg = mqtt::make_message(topic, "closed");
-	Q->enqueue(msg);  //publish initial state
+	Q->enqueue(msg);	//publish initial state
 
 	int cmd;
 	while(true){
@@ -241,21 +200,20 @@ void valve(SafeQueue * Q, const char* topic){
 				cmd_valve = {-1};
 				break;
 			}
-			std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+			std::this_thread::sleep_for(std::chrono::milliseconds(1000));	//check for comand cooldown
 		}
 		Q->enqueue(msg);
-		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 	}
 }
 
-void thermostat(SafeQueue * Q, const char* topic, const int min, const int max){
+void thermostat(SafeQueue * Q, const char* topic, const int min, const int max, const int period){
 	srand(time(0));
 	int range;
 	if(min < 0 && max >= 0) range = max - min;
 	else if(min < 0 && max < 0) range = -1*(max - min);
 	else range = max - min;
 
-	int cmd = std::rand() % (range + 1) + min;  //set initial value in range
+	int cmd = std::rand() % (range + 1) + min;	//set initial value in range
 	int value = cmd;	//state of thermostat
 	mqtt::message_ptr msg = mqtt::make_message(topic, std::to_string(cmd));
 	Q->enqueue(msg);
@@ -269,31 +227,91 @@ void thermostat(SafeQueue * Q, const char* topic, const int min, const int max){
 				msg = mqtt::make_message(topic, std::to_string(value));
 				cmd_ts = {-99};
 				Q->enqueue(msg);
-				std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+				std::this_thread::sleep_for(std::chrono::milliseconds(period));
 			}
 		}
-		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+		std::this_thread::sleep_for(std::chrono::milliseconds(1000));	//check for comand cooldown
 	}
 }
-//////////////////////////////////////////   SENSORS   //////////////////////////////////////////
 
+
+//////////////////////////////////////////   MAIN   //////////////////////////////////////////
 int main(){
+	int QOS, SERVER_PORT, THERM_MIN, THERM_MAX, THERM_PER, HYGRO_MIN, HYGRO_MAX, HYGRO_PER, WATT_MIN, WATT_MAX, WATT_PER, TS_MIN, TS_MAX, TS_PER, DS_PER_MIN, DS_PER_MAX;
+	float PIR_MIN, PIR_MAX, PIR_PER, I_MIN, I_MAX, I_PER, Q_MIN, Q_MAX, Q_PER;
+	std::string SERVER_ADDRESS, CLIENT_ID;
+
+	//Load configuration
+	std::ifstream file ("traffic.cfg");
+	if(file.is_open()){
+		std::string line;
+		while(getline(file, line)){
+			line.erase(std::remove_if(line.begin(), line.end(), isspace), line.end());
+			if(line[0] == '#' || line.empty()) continue;
+			auto delimiter = line.find("=");
+			auto name = line.substr(0, delimiter);
+			auto value = line.substr(delimiter + 1);
+			try{
+				if(!name.compare("SERVER_ADDRESS")) SERVER_ADDRESS = value;
+				else if(!name.compare("CLIENT_ID")) CLIENT_ID = value;
+				else if(!name.compare("QOS")) QOS = stoi(value);
+				else if(!name.compare("SERVER_PORT")) SERVER_PORT = stoi(value);
+				else if(!name.compare("THERM_MIN")) THERM_MIN = stoi(value);
+				else if(!name.compare("THERM_MAX")) THERM_MAX = stoi(value);
+				else if(!name.compare("THERM_PER")) THERM_PER = stoi(value);
+				else if(!name.compare("HYGRO_MIN")) HYGRO_MIN = stoi(value);
+				else if(!name.compare("HYGRO_MAX")) HYGRO_MAX = stoi(value);
+				else if(!name.compare("HYGRO_PER")) HYGRO_PER = stoi(value);
+				else if(!name.compare("WATT_MIN")) WATT_MIN = stoi(value);
+				else if(!name.compare("WATT_MAX")) WATT_MAX = stoi(value);
+				else if(!name.compare("WATT_PER")) WATT_PER = stoi(value);
+				else if(!name.compare("TS_MIN")) TS_MIN = stoi(value);
+				else if(!name.compare("TS_MAX")) TS_MAX = stoi(value);
+				else if(!name.compare("TS_PER")) TS_PER = stoi(value);
+				else if(!name.compare("DS_PER_MIN")) DS_PER_MIN = stoi(value);
+				else if(!name.compare("DS_PER_MAX")) DS_PER_MAX = stoi(value);
+				else if(!name.compare("PIR_MIN")) PIR_MIN = stof(value);
+				else if(!name.compare("PIR_MAX")) PIR_MAX = stof(value);
+				else if(!name.compare("PIR_PER")) PIR_PER = stof(value);
+				else if(!name.compare("I_MIN")) I_MIN = stof(value);
+				else if(!name.compare("I_MAX")) I_MAX = stof(value);
+				else if(!name.compare("I_PER")) I_PER = stof(value);
+				else if(!name.compare("Q_MIN")) Q_MIN = stof(value);
+				else if(!name.compare("Q_MAX")) Q_MAX = stof(value);
+				else if(!name.compare("Q_PER")) Q_PER = stof(value);
+				else{
+					std::cerr << "ERROR: Unrecognized option " << name << " in configuration file.";
+					return 1;
+				}
+			}
+			catch(const std::invalid_argument&){
+				std::cerr << "ERROR: Invalid value of " << name << " in configuration file.";
+				return 1;
+			}
+			catch(const std::out_of_range&){
+				std::cerr << "ERROR: Invalid value of " << name << " in configuration file.";
+				return 1;
+			}
+		}
+	}
+	else std::cerr << "ERROR: Could not open configuration file.\n";
+
 	SafeQueue Q;
 
-	std::thread therm(intsensor, &Q, THERM_NAME, THERM_MIN, THERM_MAX);
-	std::thread hygro(intsensor, &Q, HYGRO_NAME, HYGRO_MIN, HYGRO_MAX);
-	std::thread watt(intsensor, &Q, WATT_NAME, WATT_MIN, WATT_MAX);
+	std::thread therm(intsensor, &Q, "thermometer", THERM_MIN, THERM_MAX, THERM_PER);
+	std::thread hygro(intsensor, &Q, "hygrometer", HYGRO_MIN, HYGRO_MAX, HYGRO_PER);
+	std::thread watt(intsensor, &Q, "wattmeter", WATT_MIN, WATT_MAX, WATT_PER);
 
-	std::thread pir(floatsensor, &Q, PIR_NAME, PIR_MIN, PIR_MAX);
-	std::thread iradar(floatsensor, &Q, I_RADAR_NAME, I_MIN, I_MAX);
-	std::thread qradar(floatsensor, &Q, Q_RADAR_NAME, Q_MIN, Q_MAX);
+	std::thread pir(floatsensor, &Q, "PIR-sensor", PIR_MIN, PIR_MAX, PIR_PER);
+	std::thread iradar(floatsensor, &Q, "radar/in-phase", I_MIN, I_MAX, I_PER);
+	std::thread qradar(floatsensor, &Q, "radar/quadrature", Q_MIN, Q_MAX, Q_PER);
 
-	std::thread ds(door_switch, &Q, DS_NAME);
-	std::thread valv(valve, &Q, VALVE_NAME);
+	std::thread ds(door_switch, &Q, "door-switch", DS_PER_MIN, DS_PER_MAX);
+	std::thread valv(valve, &Q, "valve/state");
 
-	std::thread ts(thermostat, &Q, TS_NAME, TS_MIN, TS_MAX);
+	std::thread ts(thermostat, &Q, "thermostat/temp", TS_MIN, TS_MAX, TS_PER);
 
-	mqtt::async_client client(SERVER_ADDRESS, CLIENT_ID);
+	mqtt::async_client client(SERVER_ADDRESS+":"+std::to_string(SERVER_PORT), CLIENT_ID);
 	auto connOpts = mqtt::connect_options_builder()
 		.clean_session()
 		.finalize();
