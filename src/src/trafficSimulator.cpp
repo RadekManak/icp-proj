@@ -13,7 +13,8 @@
 #include <condition_variable>
 #include "mqtt/async_client.h"
 
-//THREAD COMMAND PASSING
+//THREAD COMMUNICATION
+std::atomic <bool> halt(false);
 std::atomic <int> cmd_valve = {-1};
 std::atomic <int> cmd_ts = {-99};
 
@@ -37,12 +38,10 @@ public:
 	}
 
 	//Get the first element in queue
-	//If queue is empty wait until a element is avaiable
+	//If queue is empty wait until an element is available
 	mqtt::message_ptr dequeue(void){
 		std::unique_lock<std::mutex> lock(m);
-		while(q.empty()){	//release lock as long as the wait and reaquire it afterwards
-			c.wait(lock);
-		}
+		while(q.empty()) c.wait(lock);	//release lock and require it afterwards
 		mqtt::message_ptr val = q.front();
 		q.pop();
 		return val;
@@ -82,8 +81,11 @@ class callback : public virtual mqtt::callback{
 			if(cmd.substr(0, 4) == "set "){
 				try{
 					int val = stoi(cmd.substr(4, cmd.length() - 4));
-					std::cout << "Thermostat received set command" << std::endl;
-					cmd_ts = {val};
+					if(val > -50 && val < 50){
+						std::cout << "Thermostat received valid set command" << std::endl;
+						cmd_ts = {val};
+					}
+					else std::cout << "Thermostat received set command with value out of range" << std::endl;
 				}
 				catch(std::invalid_argument){
 					std::cout << "Thermostat received invalid set value" << std::endl;
@@ -113,7 +115,7 @@ void intsensor(SafeQueue * Q, const char* topic, const int min, const int max, c
 	int value = std::rand() % (range + 1) + min;	//set initial value in range
 
 	mqtt::message_ptr msg;
-	while(true){
+	while(!halt.load()){
 		if(rand() % 2){
 			if(value >= max) value -= step;	//stay in range
 			else value += step;
@@ -144,7 +146,7 @@ void floatsensor(SafeQueue * Q, const char* topic, const float min, const float 
 
 	std::stringstream stream;
 	mqtt::message_ptr msg;
-	while(true){
+	while(!halt.load()){
 		if(rand() % 2){
 			if(value >= max) value -= step;	//stay in range
 				value += step;
@@ -168,7 +170,7 @@ void door_switch(SafeQueue * Q, const char* topic, const int period_min, const i
 	Q->enqueue(msg);	//publish initial state
 
 	int cmd;
-	while(true){
+	while(!halt.load()){
 		std::this_thread::sleep_for(std::chrono::milliseconds(rand() % (period_max - period_min + 1) + period_min));
 		if(opened){
 			msg = mqtt::make_message(topic, "closed");
@@ -187,8 +189,8 @@ void valve(SafeQueue * Q, const char* topic){
 	Q->enqueue(msg);	//publish initial state
 
 	int cmd;
-	while(true){
-		while(true){
+	while(!halt.load()){
+		while(!halt.load()){
 			cmd = cmd_valve.load();
 			if(cmd == 1){
 				msg = mqtt::make_message(topic, "opened");
@@ -218,14 +220,17 @@ void thermostat(SafeQueue * Q, const char* topic, const int min, const int max, 
 	mqtt::message_ptr msg = mqtt::make_message(topic, std::to_string(cmd));
 	Q->enqueue(msg);
 
-	while(true){
+	while(!halt.load()){
 		cmd = cmd_ts.load();
-		if(cmd != -99){
-			while(value != cmd){
+		if(cmd > -50 && cmd < 50){
+			while(!halt.load() && value != cmd){
+				if(cmd_ts.load() != cmd) cmd = cmd_ts.load();
+
 				if(value < cmd) value++;
-				else value--;
+				else if(value > cmd) value--;
+				else break;
+
 				msg = mqtt::make_message(topic, std::to_string(value));
-				cmd_ts = {-99};
 				Q->enqueue(msg);
 				std::this_thread::sleep_for(std::chrono::milliseconds(period));
 			}
@@ -237,7 +242,7 @@ void thermostat(SafeQueue * Q, const char* topic, const int min, const int max, 
 
 //////////////////////////////////////////   MAIN   //////////////////////////////////////////
 int main(){
-	int QOS, SERVER_PORT, THERM_MIN, THERM_MAX, THERM_PER, HYGRO_MIN, HYGRO_MAX, HYGRO_PER, WATT_MIN, WATT_MAX, WATT_PER, TS_MIN, TS_MAX, TS_PER, DS_PER_MIN, DS_PER_MAX;
+	int QOS, MSG_CNT, SERVER_PORT, THERM_MIN, THERM_MAX, THERM_PER, HYGRO_MIN, HYGRO_MAX, HYGRO_PER, WATT_MIN, WATT_MAX, WATT_PER, TS_MIN, TS_MAX, TS_PER, DS_PER_MIN, DS_PER_MAX;
 	float PIR_MIN, PIR_MAX, PIR_PER, I_MIN, I_MAX, I_PER, Q_MIN, Q_MAX, Q_PER;
 	std::string SERVER_ADDRESS, CLIENT_ID;
 
@@ -255,6 +260,7 @@ int main(){
 				if(!name.compare("SERVER_ADDRESS")) SERVER_ADDRESS = value;
 				else if(!name.compare("CLIENT_ID")) CLIENT_ID = value;
 				else if(!name.compare("QOS")) QOS = stoi(value);
+				else if(!name.compare("MSG_CNT")) MSG_CNT = stoi(value);
 				else if(!name.compare("SERVER_PORT")) SERVER_PORT = stoi(value);
 				else if(!name.compare("THERM_MIN")) THERM_MIN = stoi(value);
 				else if(!name.compare("THERM_MAX")) THERM_MAX = stoi(value);
@@ -326,16 +332,29 @@ int main(){
 		client.subscribe("valve/cmd", QOS);
 		client.subscribe("thermostat/cmd", QOS);
 
-		while(true){
+		while(MSG_CNT > 0){
 			msg = Q.dequeue();
 			msg->set_qos(QOS);
 			client.publish(msg);
+			MSG_CNT--;
 		}
+		halt = true;
 	}
 	catch(const mqtt::exception& exc){
 		std::cerr << exc.what() << std::endl;
 		return 1;
 	}
+
+	client.disconnect();
+	therm.join();
+	hygro.join();
+	watt.join();
+	pir.join();
+	iradar.join();
+	qradar.join();
+	ds.join();
+	valv.join();
+	ts.join();
 
 	return 0;
 }
