@@ -5,7 +5,6 @@
 #include <stdexcept>
 
 Mqttclient::Mqttclient(){
-    itemModel = std::make_unique<QStandardItemModel>();
     connOpts = mqtt::connect_options_builder()
         .clean_session(true)
         .finalize();
@@ -98,13 +97,13 @@ void Mqttclient::create_or_update_topic(QStandardItem& topicItem, mqtt::const_me
     if (topicItem.data().isNull()){
         QVariant variant;
         auto* data = new Topicdata();
-        data->fullpath = msg->get_topic();
-        data->value = msg->get_payload_str();
+        data->set_value(msg->get_payload_str());
+        data->data_changed();
         variant.setValue(data);
         topicItem.setData(variant);
     } else {
         auto* dataPtr = topicItem.data().value<Topicdata*>();
-        dataPtr->value = msg->get_payload_str();
+        dataPtr->set_value(msg->get_payload_str());
     }
 }
 
@@ -115,6 +114,7 @@ bool Mqttclient::connect(const std::string& server_address, std::string server_p
     }
     client = std::make_unique<mqtt::async_client>(server_address+":"+server_port, client_id);
     client->set_callback(*this);
+    itemModel = std::make_unique<QStandardItemModel>();
 
     try {
         std::cout << "Connecting to the MQTT server..." << std::flush;
@@ -133,7 +133,7 @@ bool Mqttclient::connect(const std::string& server_address, std::string server_p
  * @param topic
  * @param value
  */
-void Mqttclient::send_message(std::string topic, std::string value) {
+void Mqttclient::send_message(const std::string& topic,const std::string& value) {
     if(topic.empty()){
         throw std::invalid_argument("Message topic is empty");
     }
@@ -145,4 +145,13 @@ void Mqttclient::stop() {
     if (client){
         client->stop_consuming();
     }
+}
+
+void Topicdata::set_value(const std::string& new_value) {
+    value = new_value;
+    emit data_changed();
+}
+
+const std::string& Topicdata::get_value(){
+    return value;
 }

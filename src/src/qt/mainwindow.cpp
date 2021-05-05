@@ -23,16 +23,41 @@ MainWindow::MainWindow(QWidget *parent) :
 
 /**
  * Slot for actions to be run when treeview topic changes.
+ * Disconnects deselected topic signal
+ * Connects selected topic signal and updates view
  * @param selected topic
  * @param deselected topic
  */
 void MainWindow::newSelection(const QItemSelection &selected, const QItemSelection &deselected) {
-    QModelIndexList indexes = selected.indexes();
-    if (!indexes.empty()) {
-        QModelIndex item = indexes.at(0);
-        Topicdata* ptr = item.data(Qt::UserRole + 1).value<Topicdata*>();
+    QModelIndexList deselected_indexes = selected.indexes();
+    if (!deselected_indexes.empty()){
+        QModelIndex item = deselected_indexes.at(0);
+        auto* ptr = item.data(Qt::UserRole + 1).value<Topicdata*>();
         if (ptr != nullptr){
-            ui->valueTextEdit->setPlainText(QString(ptr->value.data()));
+            disconnect(ptr, &Topicdata::data_changed, this, &MainWindow::updateSelected);
+        }
+    }
+    QModelIndexList selected_indexes = selected.indexes();
+    if (!selected_indexes.empty()) {
+        QModelIndex item = selected_indexes.at(0);
+        auto* ptr = item.data(Qt::UserRole + 1).value<Topicdata*>();
+        updateSelected();
+        if (ptr != nullptr){
+            connect(ptr, &Topicdata::data_changed, this, &MainWindow::updateSelected);
+        }
+    }
+}
+
+/**
+ * Updates explorer view with selected topic
+ */
+void MainWindow::updateSelected(){
+    QModelIndexList selected_indexes = ui->treeView->selectionModel()->selectedIndexes();
+    if (!selected_indexes.empty()) {
+        QModelIndex item = selected_indexes.at(0);
+        auto* ptr = item.data(Qt::UserRole + 1).value<Topicdata*>();
+        if (ptr != nullptr){
+            ui->valueTextEdit->setPlainText(QString(ptr->get_value().data()));
         } else {
             ui->valueTextEdit->setPlainText("");
         }

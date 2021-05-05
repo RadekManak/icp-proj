@@ -2,10 +2,15 @@
 #include "mqtt/async_client.h"
 #include "QStandardItemModel"
 
-class Topicdata{
-public:
-    std::string fullpath;
+class Topicdata: public QObject{
+    Q_OBJECT
     std::string value;
+public:
+    const std::string& get_value();
+    void set_value(const std::string &new_value);
+
+    signals:
+        void data_changed();
 };
 
 Q_DECLARE_METATYPE(Topicdata*)
@@ -30,7 +35,7 @@ public:
     explicit Mqttclient();
     bool connect(const std::string& server_address, std::string server_port);
     void stop();
-    void send_message(std::string topic, std::string value);
+    void send_message(const std::string& topic,const std::string& value);
 
     // Callback functions
     void message_arrived(mqtt::const_message_ptr msg) override;

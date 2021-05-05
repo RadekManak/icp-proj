@@ -23,6 +23,7 @@ public:
 
 public slots:
     void newSelection(const QItemSelection &selected, const QItemSelection &deselected);
+    void updateSelected();
 
 private:
     Ui::MainWindow *ui;
