@@ -18,6 +18,7 @@ MainWindow::MainWindow(QWidget *parent) :
             [&](){ui->stackedWidget->setCurrentWidget(ui->dashboard);});
     ui->treeView->setHeaderHidden(true);
     ui->treeView->setSelectionMode(QAbstractItemView::SingleSelection);
+    connect(ui->pushButton_publish, &QPushButton::clicked, this, &MainWindow::publishAction);
 }
 
 /**
@@ -28,12 +29,42 @@ MainWindow::MainWindow(QWidget *parent) :
 void MainWindow::newSelection(const QItemSelection &selected, const QItemSelection &deselected) {
     QModelIndexList indexes = selected.indexes();
     if (!indexes.empty()) {
-        Topicdata* ptr = indexes.at(0).data(Qt::UserRole + 1).value<Topicdata*>();
+        QModelIndex item = indexes.at(0);
+        Topicdata* ptr = item.data(Qt::UserRole + 1).value<Topicdata*>();
         if (ptr != nullptr){
             ui->valueTextEdit->setPlainText(QString(ptr->value.data()));
         } else {
             ui->valueTextEdit->setPlainText("");
         }
+        // Build topic path by traversing tree to root node
+        std::string topic_path;
+        while (item.isValid()){
+            topic_path = item.data(Qt::DisplayRole).toString().toStdString() + '/' + topic_path;
+            item = item.parent();
+        }
+        ui->topicLineEdit->setText(topic_path.data());
+    }
+}
+
+/**
+ * Gather message information and forwawrd to client
+ */
+void MainWindow::publishAction(){
+    try{
+        mqttclient->send_message(ui->topicLineEdit->text().toStdString(),
+                                 ui->sendTextEdit->toPlainText().toStdString());
+    } catch (mqtt::exception& error) {
+        QMessageBox errorBox;
+        std::string message = std::string("Error sending message\n") + error.what();
+        errorBox.setText(message.c_str());
+        errorBox.setIcon(QMessageBox::Critical);
+        errorBox.exec();
+    } catch (std::invalid_argument& error){
+        QMessageBox errorBox;
+        std::string message = std::string("Error sending message\n") + error.what();
+        errorBox.setText(message.c_str());
+        errorBox.setIcon(QMessageBox::Critical);
+        errorBox.exec();
     }
 }
 

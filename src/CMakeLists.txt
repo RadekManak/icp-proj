@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.14)
 project(mqtt-explorer-fit)
 
-set(CMAKE_CXX_STANDARD 17)
+# PahoMqttCpp does to work on CPP 17+
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
@@ -13,7 +14,6 @@ add_executable(${PROJECT_NAME} main.cpp src/qt/mainwindow.cpp src/Mqttclient.cpp
 target_include_directories(${PROJECT_NAME} PUBLIC src src/qt)
 
 add_executable(trafficSimulator src/trafficSimulator.cpp)
-set_property(TARGET trafficSimulator PROPERTY CXX_STANDARD 14)
 target_link_libraries(trafficSimulator PRIVATE PahoMqttCpp::paho-mqttpp3-static)
 
 # Include QT from system

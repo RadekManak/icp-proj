@@ -2,6 +2,7 @@
 #include <QtGlobal>
 #include <utility>
 #include <sstream>
+#include <stdexcept>
 
 Mqttclient::Mqttclient(){
     itemModel = std::make_unique<QStandardItemModel>();
@@ -125,6 +126,19 @@ bool Mqttclient::connect(const std::string& server_address, std::string server_p
         throw;
     }
     return true;
+}
+
+/**
+ * Creates message object and sends it
+ * @param topic
+ * @param value
+ */
+void Mqttclient::send_message(std::string topic, std::string value) {
+    if(topic.empty()){
+        throw std::invalid_argument("Message topic is empty");
+    }
+    auto msg = mqtt::make_message(topic, value);
+    client->publish(msg);
 }
 
 void Mqttclient::stop() {

@@ -30,6 +30,7 @@ public:
     explicit Mqttclient();
     bool connect(const std::string& server_address, std::string server_port);
     void stop();
+    void send_message(std::string topic, std::string value);
 
     // Callback functions
     void message_arrived(mqtt::const_message_ptr msg) override;

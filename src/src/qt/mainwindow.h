@@ -30,6 +30,8 @@ private:
     void closeEvent(QCloseEvent *event) override;
 
     void disconnectAction();
+
+    void publishAction();
 };
 
 #endif // MAINWINDOW_H
