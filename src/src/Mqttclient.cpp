@@ -52,9 +52,20 @@ void Mqttclient::connection_lost(const std::string& cause){
 
 // Callback for when a message arrives.
 void Mqttclient::message_arrived(mqtt::const_message_ptr msg) {
-    std::stringstream s(msg->get_topic());
+    QStandardItem* topicItem = getTopicItem(itemModel.get(), msg->get_topic());
+    create_or_update_topic(*topicItem, msg);
+}
+
+/**
+ * This function implements tree traversal of StandardItemModel. If item for topic does not exits it gets allocated.
+ * @param model
+ * @param topic_name
+ * @return modelItem for topic
+ */
+QStandardItem* Mqttclient::getTopicItem(QStandardItemModel *model, const std::string &topic_name) {
+    std::stringstream s(topic_name);
     std::string token;
-    QStandardItem *item = itemModel->invisibleRootItem();
+    QStandardItem *item = model->invisibleRootItem();
     while (std::getline(s, token, '/')) {
         if (item->rowCount() != 0){
             for (int i = 0; i < item->rowCount();i++){
@@ -74,6 +85,26 @@ void Mqttclient::message_arrived(mqtt::const_message_ptr msg) {
             item = newitem;
         }
     }
+    return item;
+}
+
+/**
+ * Updates topic with new data from msg
+ * @param topicItem
+ * @param msg
+ */
+void Mqttclient::create_or_update_topic(QStandardItem& topicItem, mqtt::const_message_ptr& msg){
+    if (topicItem.data().isNull()){
+        QVariant variant;
+        auto* data = new Topicdata();
+        data->fullpath = msg->get_topic();
+        data->value = msg->get_payload_str();
+        variant.setValue(data);
+        topicItem.setData(variant);
+    } else {
+        auto* dataPtr = topicItem.data().value<Topicdata*>();
+        dataPtr->value = msg->get_payload_str();
+    }
 }
 
 bool Mqttclient::connect(const std::string& server_address, std::string server_port) {
@@ -83,7 +114,6 @@ bool Mqttclient::connect(const std::string& server_address, std::string server_p
     }
     client = std::make_unique<mqtt::async_client>(server_address+":"+server_port, client_id);
     client->set_callback(*this);
-    itemModel  = std::make_unique<QStandardItemModel>();
 
     try {
         std::cout << "Connecting to the MQTT server..." << std::flush;

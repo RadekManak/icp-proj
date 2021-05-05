@@ -17,6 +17,24 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->pushButton_dashboard, &QPushButton::clicked, this,
             [&](){ui->stackedWidget->setCurrentWidget(ui->dashboard);});
     ui->treeView->setHeaderHidden(true);
+    ui->treeView->setSelectionMode(QAbstractItemView::SingleSelection);
+}
+
+/**
+ * Slot for actions to be run when treeview topic changes.
+ * @param selected topic
+ * @param deselected topic
+ */
+void MainWindow::newSelection(const QItemSelection &selected, const QItemSelection &deselected) {
+    QModelIndexList indexes = selected.indexes();
+    if (!indexes.empty()) {
+        Topicdata* ptr = indexes.at(0).data(Qt::UserRole + 1).value<Topicdata*>();
+        if (ptr != nullptr){
+            ui->valueTextEdit->setPlainText(QString(ptr->value.data()));
+        } else {
+            ui->valueTextEdit->setPlainText("");
+        }
+    }
 }
 
 MainWindow::~MainWindow()
@@ -34,6 +52,7 @@ void MainWindow::connectAction() {
     try {
         mqttclient->connect(ui->lineEdit_host->text().toStdString(), ui->lineEdit_port->text().toStdString());
         ui->treeView->setModel(mqttclient->itemModel.get());
+        connect(ui->treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &MainWindow::newSelection);
         ui->stackedWidget->setCurrentWidget(ui->explorer);
     } catch (mqtt::exception& error){
         QMessageBox errorBox;

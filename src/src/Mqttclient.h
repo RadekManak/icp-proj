@@ -2,6 +2,14 @@
 #include "mqtt/async_client.h"
 #include "QStandardItemModel"
 
+class Topicdata{
+public:
+    std::string fullpath;
+    std::string value;
+};
+
+Q_DECLARE_METATYPE(Topicdata*)
+
 class action_listener : public virtual mqtt::iaction_listener {
     std::string name_;
 
@@ -23,9 +31,14 @@ public:
     bool connect(const std::string& server_address, std::string server_port);
     void stop();
 
+    // Callback functions
     void message_arrived(mqtt::const_message_ptr msg) override;
     void on_success(const mqtt::token &asyncActionToken) override;
     void on_failure(const mqtt::token &asyncActionToken) override;
     void connection_lost(const std::string& cause) override;
     void connected(const std::string &what) override;
+
+    // Model functions
+    static QStandardItem* getTopicItem(QStandardItemModel* model, const std::string& topic_name);
+    static void create_or_update_topic(QStandardItem& topicItem, mqtt::const_message_ptr& msg);
 };
