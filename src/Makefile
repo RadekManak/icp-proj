@@ -1,4 +1,4 @@
-.PHONY:all build clean run
+.PHONY:all build clean run doxygen
 
 all: build
 build:
