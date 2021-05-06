@@ -21,3 +21,16 @@ find_package(Qt${QT_VERSION} COMPONENTS ${REQUIRED_LIBS} REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE ${REQUIRED_LIBS_QUALIFIED})
 find_package(PahoMqttCpp REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE PahoMqttCpp::paho-mqttpp3-static)
+
+# Doxygen
+option(BUILD_DOC "Build documentation" ON)
+find_package(Doxygen)
+if (DOXYGEN_FOUND)
+	add_custom_target( doxygen
+		COMMAND ${DOXYGEN_EXECUTABLE} Doxyfile
+		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+		COMMENT "Generating project documentation with Doxygen"
+		VERBATIM)
+else (DOXYGEN_FOUND)
+	message("Doxygen has to be installed to generate the documentation")
+endif (DOXYGEN_FOUND)
