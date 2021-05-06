@@ -63,9 +63,13 @@ void MainWindow::updateSelected(){
         }
         // Build topic path by traversing tree to root node
         std::string topic_path;
-        while (item.isValid()){
-            topic_path = item.data(Qt::DisplayRole).toString().toStdString() + '/' + topic_path;
+        if (item.isValid()){
+            topic_path = item.data(Qt::DisplayRole).toString().toStdString();
             item = item.parent();
+            while (item.isValid()){
+                topic_path = item.data(Qt::DisplayRole).toString().toStdString() + '/' + topic_path;
+                item = item.parent();
+            }
         }
         ui->topicLineEdit->setText(topic_path.data());
     }
