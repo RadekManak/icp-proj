@@ -11,3 +11,4 @@ run:
 
 doxygen:
 	doxygen Doxyfile
+	doxygen simDoxyfile

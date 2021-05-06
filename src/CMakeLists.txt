@@ -28,6 +28,7 @@ find_package(Doxygen)
 if (DOXYGEN_FOUND)
 	add_custom_target( doxygen
 		COMMAND ${DOXYGEN_EXECUTABLE} Doxyfile
+		COMMAND ${DOXYGEN_EXECUTABLE} simDoxyfile
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 		COMMENT "Generating project documentation with Doxygen"
 		VERBATIM)

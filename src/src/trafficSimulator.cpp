@@ -1,4 +1,5 @@
-/** @file trafficSimulator.cpp
+/** MQTT traffic simulator collecting output from many concurrent sensors
+ *  @file trafficSimulator.cpp
  *  @author Radek Manak (xmanak20)
  *  @author Branislav Brezani (xbreza01)
  */
@@ -15,33 +16,35 @@
 #include <condition_variable>
 #include "mqtt/async_client.h"
 
-//THREAD COMMUNICATION
+//////////////////////////////////////////   THREAD COMMUNICATION   //////////////////////////////////////////
+/** Atomic variable used to signal other threads when to terminate */
 std::atomic <bool> halt(false);
+/** Atomic variable used to pass requested state to valve thread (-1 = no request, 0 = close, 1 = open) */
 std::atomic <int> cmd_valve = {-1};
+/** Atomic variable used to pass requested value to thermostat thread (for value to be set: -50 < value < 50) */
 std::atomic <int> cmd_ts = {-99};
 
-//THREAD SAFE QUEUE
-class SafeQueue{
+/**
+ * Class used to ensure safe thread communication
+ */
+class SafeQueue
+{
 public:
-	SafeQueue(void)
-		: q()
-		, m()
-		, c()
-	{}
-
-	~SafeQueue(void)
-	{}
-
-	//Add an element to end of queue
-	void enqueue(mqtt::message_ptr t){
+	/** Function adds element to end of the queue
+	 *  @param msg Message to be queued
+	 */
+	void enqueue(mqtt::message_ptr msg)
+	{
 		std::lock_guard<std::mutex> lock(m);
-		q.push(t);
+		q.push(msg);
 		c.notify_one();
 	}
 
-	//Get the first element in queue
-	//If queue is empty wait until an element is available
-	mqtt::message_ptr dequeue(void){
+	/** Function returns first element from the queue
+	 *  @return Latest MQTT message
+	 */
+	mqtt::message_ptr dequeue(void)
+	{
 		std::unique_lock<std::mutex> lock(m);
 		while(q.empty()) c.wait(lock);	//release lock and require it afterwards
 		mqtt::message_ptr val = q.front();
@@ -55,9 +58,13 @@ private:
 	std::condition_variable c;
 };
 
-//CALLBACK
-class callback : public virtual mqtt::callback{
-	void message_arrived(mqtt::const_message_ptr msg) override{
+/**
+ * Callback class used to receive messages
+ */
+class Callback : public virtual mqtt::callback
+{
+	void message_arrived(mqtt::const_message_ptr msg) override
+	{
 		std::string topic = msg->get_topic();
 
 		std::cout << "Message arrived" << std::endl;
@@ -97,14 +104,23 @@ class callback : public virtual mqtt::callback{
 		}
 	}
 
-	void delivery_complete(mqtt::delivery_token_ptr tok) override{
+	void delivery_complete(mqtt::delivery_token_ptr tok) override
+	{
 		std::cout << "Delivered token: " << tok->get_message_id() << std::endl;
 	}
 };
 
 
 //////////////////////////////////////////   SENSORS   //////////////////////////////////////////
-void intsensor(SafeQueue * Q, const char* topic, const int min, const int max, const int period){
+/** Function simulating a sensor returning integer values
+ *  @param Q Queue to push created messages to
+ *  @param topic Name of topic to publish to
+ *  @param min Minimum generated integer value
+ *  @param max Maximum generated integer value
+ *  @param period Time period between messages
+ */
+void intsensor(SafeQueue * Q, const char* topic, const int min, const int max, const int period)
+{
 	srand(time(0));
 	int range;
 	if(min < 0 && max >= 0) range = max - min;
@@ -132,7 +148,15 @@ void intsensor(SafeQueue * Q, const char* topic, const int min, const int max, c
 	}
 }
 
-void floatsensor(SafeQueue * Q, const char* topic, const float min, const float max, const int period){
+/** Function simulating a sensor returning float values
+ *  @param Q Queue to push created messages to
+ *  @param topic Name of topic to publish to
+ *  @param min Minimum generated float value
+ *  @param max Maximum generated float value
+ *  @param period Time period between messages
+ */
+void floatsensor(SafeQueue * Q, const char* topic, const float min, const float max, const int period)
+{
 	srand(time(0));
 	float range;
 	if(min < 0 && max >= 0) range = max - min;
@@ -166,7 +190,14 @@ void floatsensor(SafeQueue * Q, const char* topic, const float min, const float 
 	}
 }
 
-void door_switch(SafeQueue * Q, const char* topic, const int period_min, const int period_max){
+/** Function simulating a door switch sensor which state changes in specified period
+ *  @param Q Queue to push created messages to
+ *  @param topic Name of topic to publish to
+ *  @param period_min Minimum time period between state change
+ *  @param period_max Maximum time period between state change
+ */
+void door_switch(SafeQueue * Q, const char* topic, const int period_min, const int period_max)
+{
 	mqtt::message_ptr msg = mqtt::make_message(topic, "closed");
 	bool opened = false;	//state of door switch
 	Q->enqueue(msg);	//publish initial state
@@ -186,7 +217,12 @@ void door_switch(SafeQueue * Q, const char* topic, const int period_min, const i
 	}
 }
 
-void valve(SafeQueue * Q, const char* topic){
+/** Function simulating a valve which can be controlled using commands "open" and "close" received in topic valve/cmd
+ *  @param Q Queue to push created messages to
+ *  @param topic Name of topic to publish to
+ */
+void valve(SafeQueue * Q, const char* topic)
+{
 	mqtt::message_ptr msg = mqtt::make_message(topic, "closed");
 	Q->enqueue(msg);	//publish initial state
 
@@ -210,7 +246,15 @@ void valve(SafeQueue * Q, const char* topic){
 	}
 }
 
-void thermostat(SafeQueue * Q, const char* topic, const int min, const int max, const int period){
+/** Function simulating a thermostat which can be controlled using command "set <value>" received in topic thermostat/cmd
+ *  @param Q Queue to push created messages to
+ *  @param topic Name of topic to publish to
+ *  @param min Initial minimum integer value, min > -50
+ *  @param max Initial maximum integer value, max < 50
+ *  @param period Time period between messages
+ */
+void thermostat(SafeQueue * Q, const char* topic, const int min, const int max, const int period)
+{
 	srand(time(0));
 	int range;
 	if(min < 0 && max >= 0) range = max - min;
@@ -241,7 +285,14 @@ void thermostat(SafeQueue * Q, const char* topic, const int min, const int max, 
 	}
 }
 
-void camera(SafeQueue * Q, const char* topic, const std::vector<std::string> file_list, const int period){
+/** Function simulating a camera which publishes new image every period
+ *  @param Q Queue to push created messages to
+ *  @param topic Name of topic to publish to
+ *  @param file_list List of files to cycle through for publishing
+ *  @param period Time period between messages
+ */
+void camera(SafeQueue * Q, const char* topic, const std::vector<std::string> file_list, const int period)
+{
 	while(!halt.load()){
 		for(auto it: file_list){
 			if(halt.load()) break;
@@ -258,6 +309,9 @@ void camera(SafeQueue * Q, const char* topic, const std::vector<std::string> fil
 
 
 //////////////////////////////////////////   MAIN   //////////////////////////////////////////
+/**
+ * Main body of the program
+ */
 int main(){
 	int QOS, MSG_CNT, SERVER_PORT, THERM_MIN, THERM_MAX, THERM_PER, HYGRO_MIN, HYGRO_MAX, HYGRO_PER, WATT_MIN, WATT_MAX, WATT_PER, TS_MIN, TS_MAX, TS_PER, DS_PER_MIN, DS_PER_MAX, PIR_PER, I_PER, Q_PER, CAM_PER;
 	float PIR_MIN, PIR_MAX, I_MIN, I_MAX, Q_MIN, Q_MAX;
