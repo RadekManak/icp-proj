@@ -241,12 +241,28 @@ void thermostat(SafeQueue * Q, const char* topic, const int min, const int max, 
 	}
 }
 
+void camera(SafeQueue * Q, const char* topic, const std::vector<std::string> file_list, const int period){
+	while(!halt.load()){
+		for(auto it: file_list){
+			if(halt.load()) break;
+			std::ifstream infile("sim/"+it, std::ios::binary);
+  			std::string content((std::istreambuf_iterator<char>(infile)), (std::istreambuf_iterator<char>()));
+
+  			mqtt::message_ptr msg = mqtt::make_message(topic, content);
+			Q->enqueue(msg);
+
+			std::this_thread::sleep_for(std::chrono::milliseconds(period));
+		}
+	}
+}
+
 
 //////////////////////////////////////////   MAIN   //////////////////////////////////////////
 int main(){
-	int QOS, MSG_CNT, SERVER_PORT, THERM_MIN, THERM_MAX, THERM_PER, HYGRO_MIN, HYGRO_MAX, HYGRO_PER, WATT_MIN, WATT_MAX, WATT_PER, TS_MIN, TS_MAX, TS_PER, DS_PER_MIN, DS_PER_MAX;
-	float PIR_MIN, PIR_MAX, PIR_PER, I_MIN, I_MAX, I_PER, Q_MIN, Q_MAX, Q_PER;
+	int QOS, MSG_CNT, SERVER_PORT, THERM_MIN, THERM_MAX, THERM_PER, HYGRO_MIN, HYGRO_MAX, HYGRO_PER, WATT_MIN, WATT_MAX, WATT_PER, TS_MIN, TS_MAX, TS_PER, DS_PER_MIN, DS_PER_MAX, PIR_PER, I_PER, Q_PER, CAM_PER;
+	float PIR_MIN, PIR_MAX, I_MIN, I_MAX, Q_MIN, Q_MAX;
 	std::string SERVER_ADDRESS, CLIENT_ID;
+	std::vector <std::string> CAM_IMG;
 
 	//Load configuration
 	std::ifstream file ("traffic.cfg");
@@ -280,13 +296,21 @@ int main(){
 				else if(!name.compare("DS_PER_MAX")) DS_PER_MAX = stoi(value);
 				else if(!name.compare("PIR_MIN")) PIR_MIN = stof(value);
 				else if(!name.compare("PIR_MAX")) PIR_MAX = stof(value);
-				else if(!name.compare("PIR_PER")) PIR_PER = stof(value);
+				else if(!name.compare("PIR_PER")) PIR_PER = stoi(value);
 				else if(!name.compare("I_MIN")) I_MIN = stof(value);
 				else if(!name.compare("I_MAX")) I_MAX = stof(value);
-				else if(!name.compare("I_PER")) I_PER = stof(value);
+				else if(!name.compare("I_PER")) I_PER = stoi(value);
 				else if(!name.compare("Q_MIN")) Q_MIN = stof(value);
 				else if(!name.compare("Q_MAX")) Q_MAX = stof(value);
-				else if(!name.compare("Q_PER")) Q_PER = stof(value);
+				else if(!name.compare("Q_PER")) Q_PER = stoi(value);
+				else if(!name.compare("CAM_PER")) CAM_PER = stoi(value);
+				else if(!name.compare("CAM_IMG")){
+					size_t start, end = 0;
+					while ((start = value.find_first_not_of(',', end)) != std::string::npos){
+						end = value.find(',', start);
+						CAM_IMG.push_back(value.substr(start, end - start));
+					}
+				}
 				else{
 					std::cerr << "ERROR: Unrecognized option " << name << " in configuration file.";
 					return 1;
@@ -318,6 +342,8 @@ int main(){
 	std::thread valv(valve, &Q, "valve/state");
 
 	std::thread ts(thermostat, &Q, "thermostat/temp", TS_MIN, TS_MAX, TS_PER);
+
+	std::thread cam(camera, &Q, "camera", CAM_IMG, CAM_PER);
 
 	mqtt::async_client client(SERVER_ADDRESS+":"+std::to_string(SERVER_PORT), CLIENT_ID);
 	auto connOpts = mqtt::connect_options_builder()
@@ -357,6 +383,7 @@ int main(){
 	ds.join();
 	valv.join();
 	ts.join();
+	cam.join();
 
 	return 0;
 }
