@@ -1,3 +1,8 @@
+/** @file Mqttclient.h
+ *  @author Radek Manak (xmanak20)
+ *  @author Branislav Brezani (xbreza01)
+ */
+
 #pragma once
 #include "mqtt/async_client.h"
 #include "QStandardItemModel"

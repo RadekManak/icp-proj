@@ -1,3 +1,8 @@
+/** @file mainwindow.cpp
+ *  @author Radek Manak (xmanak20)
+ *  @author Branislav Brezani (xbreza01)
+ */
+
 #include "mainwindow.h"
 #include <QMessageBox>
 #include <utility>

@@ -1,3 +1,8 @@
+/** @file mainwindow.h
+ *  @author Radek Manak (xmanak20)
+ *  @author Branislav Brezani (xbreza01)
+ */
+
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 

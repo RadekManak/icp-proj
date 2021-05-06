@@ -1,5 +1,7 @@
-// file: trafficSimulator.cpp
-// specification: ICP project 2021 variant 1
+/** @file trafficSimulator.cpp
+ *  @author Radek Manak (xmanak20)
+ *  @author Branislav Brezani (xbreza01)
+ */
 
 #include <iostream>
 #include <string>

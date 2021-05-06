@@ -1,3 +1,8 @@
+/** @file Mqttclient.cpp
+ *  @author Radek Manak (xmanak20)
+ *  @author Branislav Brezani (xbreza01)
+ */
+
 #include "Mqttclient.h"
 #include <QtGlobal>
 #include <utility>
