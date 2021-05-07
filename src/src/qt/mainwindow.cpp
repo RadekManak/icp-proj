@@ -8,6 +8,7 @@
 #include <utility>
 #include "ui_mainwindow.h"
 
+/** Main window constructor */
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -27,14 +28,19 @@ MainWindow::MainWindow(QWidget *parent) :
     topicHistoryItemDelegate = new TopicHistoryItemDelegate(this);
 }
 
+/** Main window destructor */
+MainWindow::~MainWindow()
+{
+    delete ui;
+}
+
 /**
- * Slot for actions to be run when treeview topic changes.
- * Disconnects deselected topic signal
- * Connects selected topic signal and updates view
- * @param selected topic
- * @param deselected topic
+ * Slot for actions to be run when treeview topic changes, disconnects deselected topic signal and connects selected topic signal and updates view
+ * @param selected Selected topic
+ * @param deselected Deselected topic
  */
-void MainWindow::newSelection(const QItemSelection &selected, const QItemSelection &deselected) {
+void MainWindow::newSelection(const QItemSelection &selected, const QItemSelection &deselected)
+{
     QModelIndexList deselected_indexes = deselected.indexes();
     if (!deselected_indexes.empty()){
         QModelIndex item = deselected_indexes.at(0);
@@ -70,7 +76,8 @@ void MainWindow::newSelection(const QItemSelection &selected, const QItemSelecti
 /**
  * Updates explorer view with selected topic
  */
-void MainWindow::updateSelected(){
+void MainWindow::updateSelected()
+{
     QModelIndexList selected_indexes = ui->treeView->selectionModel()->selectedIndexes();
     if (!selected_indexes.empty()) {
         QModelIndex item = selected_indexes.at(0);
@@ -86,7 +93,8 @@ void MainWindow::updateSelected(){
 /**
  * Gather message information and forwawrd to client
  */
-void MainWindow::publishAction(){
+void MainWindow::publishAction()
+{
     try{
         mqttclient->send_message(ui->topicLineEdit->text().toStdString(),
                                  ui->sendTextEdit->toPlainText().toStdString());
@@ -105,18 +113,21 @@ void MainWindow::publishAction(){
     }
 }
 
-MainWindow::~MainWindow()
+/**
+ * Set client
+ */
+bool MainWindow::setClient(std::shared_ptr<Mqttclient> client)
 {
-    delete ui;
-}
-
-bool MainWindow::setClient(std::shared_ptr<Mqttclient> client) {
     mqttclient = std::move(client);
     ui->treeView->setModel(mqttclient->itemModel.get());
     return true;
 }
 
-void MainWindow::connectAction() {
+/**
+ * Connects GUI actions
+ */
+void MainWindow::connectAction()
+{
     try {
         mqttclient->connect(ui->lineEdit_host->text().toStdString(), ui->lineEdit_port->text().toStdString());
         ui->treeView->setModel(mqttclient->itemModel.get());

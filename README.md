@@ -15,9 +15,9 @@ This project focuses on utilizing the MQTT protocol using client library Eclipse
 ### Explorer:
 This program is a MQTT client with GUI that provides structured overview of topics and allows publishing.
 Unimplemented features:
-- Message filtering
-- Non-text messages recognition
-- File saving
+- Messages filtering
+- Recognize images from binary data
+- Explorer state saving
 - Dashboard
 
 ### Traffic simulator:
@@ -28,5 +28,5 @@ Currently these types of sensors are supported:
 - A valve, which has 2 states(opened & closed), state changes after receiving commands "open" or "close"
 - A thernostat outputting integer values, value can be set using command "set <value>", current value then gradually changes every period until it equals the new one
 - A camera which publishes new image from specified list every period
- 
+
  Simulator configuration can be customized in file sim/traffic.cfg

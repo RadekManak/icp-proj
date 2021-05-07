@@ -1,3 +1,12 @@
+/**
+ *  https://stackoverflow.com/questions/53105343/is-it-possible-to-add-a-custom-widget-into-a-qlistview
+ *  This file is based on scopchanov's response
+ *
+ *  @file TopicHistoryItemDelegate.cpp
+ *  @author Radek Manak (xmanak20)
+ *  @author Branislav Brezani (xbreza01)
+ */
+
 #include "TopicHistoryItemDelegate.h"
 #include "messageviewdialog.h"
 #include <QLabel>
@@ -6,11 +15,8 @@
 #include <QDialog>
 #include <QTextEdit>
 
-// https://stackoverflow.com/questions/53105343/is-it-possible-to-add-a-custom-widget-into-a-qlistview
-// This file is based on scopchanov's response
-
-void
-TopicHistoryItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const {
+void TopicHistoryItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+{
     QStyleOptionViewItem opt(option);
     initStyleOption(&opt, index);
 
@@ -49,16 +55,18 @@ TopicHistoryItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
     painter->restore();
 }
 
-QSize TopicHistoryItemDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const {
+QSize TopicHistoryItemDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
+{
     return QStyledItemDelegate::sizeHint(option, index);
 }
 
-TopicHistoryItemDelegate::TopicHistoryItemDelegate(QObject *parent) {
+TopicHistoryItemDelegate::TopicHistoryItemDelegate(QObject *parent)
+{
     setParent(parent);
 }
 
-QWidget *TopicHistoryItemDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option,
-                                                const QModelIndex &index) const {
+QWidget *TopicHistoryItemDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
+{
     auto* dialog = new MessageViewDialog(parent);
     auto* message = index.data(Qt::UserRole+1).value<TopicMessage*>();
     dialog->setMessage(message);

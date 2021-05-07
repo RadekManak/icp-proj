@@ -174,7 +174,8 @@ void Mqttclient::stop()
  * Adds message to topic history
  * @param message Pointer to message object
  */
-void Topicdata::add_message(TopicMessage* message) {
+void Topicdata::add_message(TopicMessage* message)
+{
     auto *messageItem = new QStandardItem();
     QVariant variant;
     auto* topicMessage = message;

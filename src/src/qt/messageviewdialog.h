@@ -1,3 +1,9 @@
+/**
+ *  @file messageviewdialog.h
+ *  @author Radek Manak (xmanak20)
+ *  @author Branislav Brezani (xbreza01)
+ */
+
 #ifndef MESSAGEVIEWDIALOG_H
 #define MESSAGEVIEWDIALOG_H
 

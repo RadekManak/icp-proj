@@ -1,6 +1,13 @@
+/**
+ *  @file messageviewdialog.cpp
+ *  @author Radek Manak (xmanak20)
+ *  @author Branislav Brezani (xbreza01)
+ */
+
 #include "messageviewdialog.h"
 #include "ui_messageviewdialog.h"
 
+/** Constructor */
 MessageViewDialog::MessageViewDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::MessageViewDialog)
@@ -8,11 +15,16 @@ MessageViewDialog::MessageViewDialog(QWidget *parent) :
     ui->setupUi(this);
 }
 
+/** Destructor */
 MessageViewDialog::~MessageViewDialog()
 {
     delete ui;
 }
 
+/**
+ * Displays message in a new window
+ * @param message Object containing message data
+ */
 void MessageViewDialog::setMessage(TopicMessage *message) {
     time_t time = std::chrono::system_clock::to_time_t(message->received_time);
     char * timestamptext = ctime(&time);
