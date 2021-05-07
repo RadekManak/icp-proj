@@ -7,12 +7,21 @@
 #include "mqtt/async_client.h"
 #include "QStandardItemModel"
 
+class TopicMessage{
+public:
+    std::chrono::time_point<std::chrono::system_clock> received_time;
+    std::string mime_type;
+    mqtt::binary payload;
+};
+
+Q_DECLARE_METATYPE(TopicMessage*)
+
 class Topicdata: public QObject{
     Q_OBJECT
-    std::string value;
 public:
-    const std::string& get_value();
-    void set_value(const std::string &new_value);
+    QStandardItemModel messages;
+    void add_message(TopicMessage* message);
+    TopicMessage* latest;
 
     signals:
         void data_changed();

@@ -24,6 +24,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->treeView->setHeaderHidden(true);
     ui->treeView->setSelectionMode(QAbstractItemView::SingleSelection);
     connect(ui->pushButton_publish, &QPushButton::clicked, this, &MainWindow::publishAction);
+    topicHistoryItemDelegate = new TopicHistoryItemDelegate(this);
 }
 
 /**
@@ -34,7 +35,7 @@ MainWindow::MainWindow(QWidget *parent) :
  * @param deselected topic
  */
 void MainWindow::newSelection(const QItemSelection &selected, const QItemSelection &deselected) {
-    QModelIndexList deselected_indexes = selected.indexes();
+    QModelIndexList deselected_indexes = deselected.indexes();
     if (!deselected_indexes.empty()){
         QModelIndex item = deselected_indexes.at(0);
         auto* ptr = item.data(Qt::UserRole + 1).value<Topicdata*>();
@@ -48,6 +49,19 @@ void MainWindow::newSelection(const QItemSelection &selected, const QItemSelecti
         auto* ptr = item.data(Qt::UserRole + 1).value<Topicdata*>();
         updateSelected();
         if (ptr != nullptr){
+            ui->listView->setModel(&ptr->messages);
+            ui->listView->setItemDelegate(topicHistoryItemDelegate);
+            // Build topic path by traversing tree to root node
+            std::string topic_path;
+            if (item.isValid()){
+                topic_path = item.data(Qt::DisplayRole).toString().toStdString();
+                item = item.parent();
+                while (item.isValid()){
+                    topic_path = item.data(Qt::DisplayRole).toString().toStdString() + '/' + topic_path;
+                    item = item.parent();
+                }
+            }
+            ui->topicLineEdit->setText(topic_path.data());
             connect(ptr, &Topicdata::data_changed, this, &MainWindow::updateSelected);
         }
     }
@@ -62,21 +76,10 @@ void MainWindow::updateSelected(){
         QModelIndex item = selected_indexes.at(0);
         auto* ptr = item.data(Qt::UserRole + 1).value<Topicdata*>();
         if (ptr != nullptr){
-            ui->valueTextEdit->setPlainText(QString(ptr->get_value().data()));
+            ui->viewLabel->setText(QString(ptr->latest->payload.data()));
         } else {
-            ui->valueTextEdit->setPlainText("");
+            ui->viewLabel->setText("");
         }
-        // Build topic path by traversing tree to root node
-        std::string topic_path;
-        if (item.isValid()){
-            topic_path = item.data(Qt::DisplayRole).toString().toStdString();
-            item = item.parent();
-            while (item.isValid()){
-                topic_path = item.data(Qt::DisplayRole).toString().toStdString() + '/' + topic_path;
-                item = item.parent();
-            }
-        }
-        ui->topicLineEdit->setText(topic_path.data());
     }
 }
 

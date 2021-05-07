@@ -10,6 +10,7 @@
 #include "Mqttclient.h"
 #include <QStandardItemModel>
 #include <QItemSelection>
+#include "TopicHistoryItemDelegate.h"
 
 namespace Ui {
 class MainWindow;
@@ -19,6 +20,7 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
     std::shared_ptr<Mqttclient> mqttclient;
+    TopicHistoryItemDelegate* topicHistoryItemDelegate;
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);

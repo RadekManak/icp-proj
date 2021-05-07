@@ -99,17 +99,24 @@ QStandardItem* Mqttclient::getTopicItem(QStandardItemModel *model, const std::st
  * @param msg
  */
 void Mqttclient::create_or_update_topic(QStandardItem& topicItem, mqtt::const_message_ptr& msg){
+    Topicdata* topic;
     if (topicItem.data().isNull()){
         QVariant variant;
-        auto* data = new Topicdata();
-        data->set_value(msg->get_payload_str());
-        data->data_changed();
-        variant.setValue(data);
+        topic = new Topicdata();
+        variant.setValue(topic);
         topicItem.setData(variant);
     } else {
-        auto* dataPtr = topicItem.data().value<Topicdata*>();
-        dataPtr->set_value(msg->get_payload_str());
+        topic = topicItem.data().value<Topicdata*>();
     }
+    TopicMessage* message = new TopicMessage();
+    message->received_time = std::chrono::system_clock::now();
+    message->payload = msg->get_payload();
+    if (message->payload.rfind("\x89\x50\x4E\x47\x0D\x0A\x1A\x0A", 0) == 0){
+        message->mime_type = "image/png";
+    } else {
+        message->mime_type = "text/plain";
+    }
+    topic->add_message(message);
 }
 
 bool Mqttclient::connect(const std::string& server_address, std::string server_port) {
@@ -152,11 +159,14 @@ void Mqttclient::stop() {
     }
 }
 
-void Topicdata::set_value(const std::string& new_value) {
-    value = new_value;
+void Topicdata::add_message(TopicMessage* message) {
+    auto *messageItem = new QStandardItem();
+    QVariant variant;
+    auto* topicMessage = message;
+    variant.setValue(topicMessage);
+    messageItem->setData(variant);
+    messages.appendRow(messageItem);
+    latest = topicMessage;
     emit data_changed();
 }
 
-const std::string& Topicdata::get_value(){
-    return value;
-}
