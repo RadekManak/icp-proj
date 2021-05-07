@@ -22,6 +22,18 @@ target_link_libraries(${PROJECT_NAME} PRIVATE ${REQUIRED_LIBS_QUALIFIED})
 find_package(PahoMqttCpp REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE PahoMqttCpp::paho-mqttpp3-static)
 
+add_custom_target( run
+		COMMAND ./${PROJECT_NAME}
+		DEPENDS ${PROJECT_NAME}
+		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+		VERBATIM)
+
+add_custom_target( sim
+		COMMAND ./trafficSimulator
+		DEPENDS trafficSimulator
+		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+		VERBATIM)
+
 # Doxygen
 option(BUILD_DOC "Build documentation" ON)
 find_package(Doxygen)

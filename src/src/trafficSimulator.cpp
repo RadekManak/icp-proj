@@ -1,4 +1,17 @@
-/** MQTT traffic simulator collecting output from many concurrent sensors
+/** @mainpage Traffic simulator
+ * This program simulates operation of many various concurrent sensors and collects their output, which is published to specified MQTT server based on FIFO rule.
+ *
+ * Currently these types of sensors are supported:
+ * 		- Sensors outputting integer/float values in specified range, value is randomly increased or decreased every period
+ * 		- A door switch, which has 2 states(opened & closed), state changes after random period from specified period range
+ * 		- A valve, which has 2 states(opened & closed), state changes after receiving commands "open" or "close"
+ * 		- A thernostat outputting integer values, value can be set using command "set <value>", current value then gradually changes every period until it equals the new one
+ * 		- A camera which publishes new image from specified list every period
+ *
+ * Simulator configuration can be customized in file traffic.cfg
+ */ 
+
+/**
  *  @file trafficSimulator.cpp
  *  @author Radek Manak (xmanak20)
  *  @author Branislav Brezani (xbreza01)
@@ -25,7 +38,7 @@ std::atomic <int> cmd_valve = {-1};
 std::atomic <int> cmd_ts = {-99};
 
 /**
- * Class used to ensure safe thread communication
+ * Class implementing a thread safe queue
  */
 class SafeQueue
 {
@@ -40,8 +53,8 @@ public:
 		c.notify_one();
 	}
 
-	/** Function returns first element from the queue
-	 *  @return Latest MQTT message
+	/** Function removes first element from the queue
+	 *  @return First MQTT message in queue
 	 */
 	mqtt::message_ptr dequeue(void)
 	{
@@ -202,7 +215,6 @@ void door_switch(SafeQueue * Q, const char* topic, const int period_min, const i
 	bool opened = false;	//state of door switch
 	Q->enqueue(msg);	//publish initial state
 
-	int cmd;
 	while(!halt.load()){
 		std::this_thread::sleep_for(std::chrono::milliseconds(rand() % (period_max - period_min + 1) + period_min));
 		if(opened){
@@ -294,7 +306,7 @@ void thermostat(SafeQueue * Q, const char* topic, const int min, const int max, 
 void camera(SafeQueue * Q, const char* topic, const std::vector<std::string> file_list, const int period)
 {
 	while(!halt.load()){
-		for(auto it: file_list){
+		for(auto &it: file_list){
 			if(halt.load()) break;
 			std::ifstream infile("sim/"+it, std::ios::binary);
   			std::string content((std::istreambuf_iterator<char>(infile)), (std::istreambuf_iterator<char>()));
@@ -319,7 +331,7 @@ int main(){
 	std::vector <std::string> CAM_IMG;
 
 	//Load configuration
-	std::ifstream file ("traffic.cfg");
+	std::ifstream file ("../sim/traffic.cfg");
 	if(file.is_open()){
 		std::string line;
 		while(getline(file, line)){
@@ -380,8 +392,10 @@ int main(){
 			}
 		}
 	}
-	else std::cerr << "ERROR: Could not open configuration file.\n";
-
+	else{
+		std::cerr << "ERROR: Could not open configuration file.\n";
+		return 1;
+	}
 	SafeQueue Q;
 
 	std::thread therm(intsensor, &Q, "thermometer", THERM_MIN, THERM_MAX, THERM_PER);
@@ -403,7 +417,7 @@ int main(){
 	auto connOpts = mqtt::connect_options_builder()
 		.clean_session()
 		.finalize();
-	callback cb;
+	Callback cb;
 	client.set_callback(cb);
 
 	mqtt::message_ptr msg;
