@@ -29,16 +29,6 @@ public:
 
 Q_DECLARE_METATYPE(Topicdata*)
 
-class action_listener : public virtual mqtt::iaction_listener {
-    std::string name_;
-
-    void on_failure(const mqtt::token &tok) override;
-
-    void on_success(const mqtt::token &tok) override;
-public:
-    explicit action_listener(std::string name);
-};
-
 class Mqttclient : public virtual mqtt::callback, public virtual mqtt::iaction_listener, public virtual QObject{
     std::unique_ptr<mqtt::async_client> client;
     mqtt::connect_options connOpts;

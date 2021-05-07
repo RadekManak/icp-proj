@@ -9,65 +9,63 @@
 #include <sstream>
 #include <stdexcept>
 
-Mqttclient::Mqttclient(){
+/** Connection options */
+Mqttclient::Mqttclient()
+{
     connOpts = mqtt::connect_options_builder()
         .clean_session(true)
         .finalize();
 }
-
+/** Quality of service */
 const int QOS = 1;
+/** Root topic name */
 const std::string TOPIC = "#";
 
-void action_listener::on_failure(const mqtt::token& tok) {
-    std::cout << name_ << " failure";
-    if (tok.get_message_id() != 0)
-        std::cout << " for token: [" << tok.get_message_id() << "]" << std::endl;
-    std::cout << std::endl;
-}
+/** Client callback override for when action fails */
+void Mqttclient::on_failure(const mqtt::token& asyncActionToken) {}
 
-void action_listener::on_success(const mqtt::token& tok) {
-    std::cout << name_ << " success";
-    if (tok.get_message_id() != 0)
-        std::cout << " for token: [" << tok.get_message_id() << "]" << std::endl;
-    auto top = tok.get_topics();
-    if (top && !top->empty())
-        std::cout << "\ttoken topic: '" << (*top)[0] << "', ..." << std::endl;
-    std::cout << std::endl;
-}
+/** Client callback override for when action succeeds */
+void Mqttclient::on_success(const mqtt::token& asyncActionToken) {}
 
-action_listener::action_listener(std::string name) : name_(std::move(name)) {}
-
-// Re-connection failure
-void Mqttclient::on_failure(const mqtt::token &asyncActionToken) {
-}
-
-void Mqttclient::on_success(const mqtt::token &asyncActionToken) {
-}
-
-void Mqttclient::connected(const std::string& what) {
+/**
+ * Callback for when client connects to a server
+ * @param what Connection status message
+ */
+void Mqttclient::connected(const std::string& what)
+{
     client->subscribe(TOPIC, QOS);
 }
 
-void Mqttclient::connection_lost(const std::string& cause){
+/**
+ * Callback for when client loses connection to a server
+ * @param cause Cause of connection loss
+ */
+void Mqttclient::connection_lost(const std::string& cause)
+{
     std::cerr << "Connection lost\n";
     if (!cause.empty()){
         std::cout << "\tcause: " << cause << "\n";
     }
 }
 
-// Callback for when a message arrives.
-void Mqttclient::message_arrived(mqtt::const_message_ptr msg) {
+/**
+ * Callback for when a message arrives
+ * @param msg Pointer to received message
+ */
+void Mqttclient::message_arrived(mqtt::const_message_ptr msg)
+{
     QStandardItem* topicItem = getTopicItem(itemModel.get(), msg->get_topic());
     create_or_update_topic(*topicItem, msg);
 }
 
 /**
- * This function implements tree traversal of StandardItemModel. If item for topic does not exits it gets allocated.
- * @param model
- * @param topic_name
+ * This function implements tree traversal of StandardItemModel, if item for topic does not exits it gets allocated.
+ * @param model Model representing current topic tree
+ * @param topic_name Topic name
  * @return modelItem for topic
  */
-QStandardItem* Mqttclient::getTopicItem(QStandardItemModel *model, const std::string &topic_name) {
+QStandardItem* Mqttclient::getTopicItem(QStandardItemModel *model, const std::string &topic_name)
+{
     std::stringstream s(topic_name);
     std::string token;
     QStandardItem *item = model->invisibleRootItem();
@@ -94,11 +92,12 @@ QStandardItem* Mqttclient::getTopicItem(QStandardItemModel *model, const std::st
 }
 
 /**
- * Updates topic with new data from msg
- * @param topicItem
- * @param msg
+ * Updates topic with new data from message
+ * @param topicItem modelItem of topic
+ * @param msg Message containing new data
  */
-void Mqttclient::create_or_update_topic(QStandardItem& topicItem, mqtt::const_message_ptr& msg){
+void Mqttclient::create_or_update_topic(QStandardItem& topicItem, mqtt::const_message_ptr& msg)
+{
     Topicdata* topic;
     if (topicItem.data().isNull()){
         QVariant variant;
@@ -119,7 +118,14 @@ void Mqttclient::create_or_update_topic(QStandardItem& topicItem, mqtt::const_me
     topic->add_message(message);
 }
 
-bool Mqttclient::connect(const std::string& server_address, std::string server_port) {
+/**
+ * Connects to a specified MQTT server
+ * @param server_address Server address
+ * @param server_port Server port
+ * @return Returns true at success
+ */
+bool Mqttclient::connect(const std::string& server_address, std::string server_port)
+{
     std::string client_id = "icp-mqtt-explorer-vut-fit";
     if (server_port.empty()){
         server_port = "1883";
@@ -142,10 +148,11 @@ bool Mqttclient::connect(const std::string& server_address, std::string server_p
 
 /**
  * Creates message object and sends it
- * @param topic
- * @param value
+ * @param topic Topic of message
+ * @param value Value of message
  */
-void Mqttclient::send_message(const std::string& topic,const std::string& value) {
+void Mqttclient::send_message(const std::string& topic,const std::string& value)
+{
     if(topic.empty()){
         throw std::invalid_argument("Message topic is empty");
     }
@@ -153,12 +160,20 @@ void Mqttclient::send_message(const std::string& topic,const std::string& value)
     client->publish(msg);
 }
 
-void Mqttclient::stop() {
+/**
+ * Stops consuming messages, removing internal callback and discarding any unread messages
+ */
+void Mqttclient::stop()
+{
     if (client){
         client->stop_consuming();
     }
 }
 
+/**
+ * Adds message to topic history
+ * @param message Pointer to message object
+ */
 void Topicdata::add_message(TopicMessage* message) {
     auto *messageItem = new QStandardItem();
     QVariant variant;
@@ -169,4 +184,3 @@ void Topicdata::add_message(TopicMessage* message) {
     latest = topicMessage;
     emit data_changed();
 }
-
