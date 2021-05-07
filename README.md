@@ -1,5 +1,6 @@
 # ICP Project 2020/2021 - variant 1
 Authors: Radek Manak (xmanak20) & Branislav Brezani (xbreza01)
+
 This project focuses on utilizing the MQTT protocol using client library Eclipse Paho.
 
 ### Usage:
@@ -14,7 +15,7 @@ This project focuses on utilizing the MQTT protocol using client library Eclipse
 ### Explorer:
 This program is a MQTT client with GUI that provides structured overview of topics and allows publishing.
 Unimplemented features:
-- History
+- Message filtering
 - Non-text messages recognition
 - File saving
 - Dashboard

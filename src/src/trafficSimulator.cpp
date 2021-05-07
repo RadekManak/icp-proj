@@ -309,9 +309,9 @@ void camera(SafeQueue * Q, const char* topic, const std::vector<std::string> fil
 		for(auto &it: file_list){
 			if(halt.load()) break;
 			std::ifstream infile("../sim/"+it, std::ios::binary);
-  			std::string content((std::istreambuf_iterator<char>(infile)), (std::istreambuf_iterator<char>()));
+			std::string content((std::istreambuf_iterator<char>(infile)), (std::istreambuf_iterator<char>()));
 
-  			mqtt::message_ptr msg = mqtt::make_message(topic, content);
+			mqtt::message_ptr msg = mqtt::make_message(topic, content);
 			Q->enqueue(msg);
 
 			std::this_thread::sleep_for(std::chrono::milliseconds(period));
