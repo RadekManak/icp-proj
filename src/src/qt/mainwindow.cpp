@@ -7,6 +7,8 @@
 #include <QMessageBox>
 #include <utility>
 #include <QSettings>
+#include <QFileDialog>
+#include <fstream>
 #include "ui_mainwindow.h"
 
 /** Main window constructor */
@@ -32,6 +34,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->lineEdit_port->setText(settings.value("login/port").toString());
     ui->lineEdit_username->setText(settings.value("login/username").toString());
     ui->lineEdit_password->setText(settings.value("login/password").toString());
+    connect(ui->combobox_inputType, static_cast<void (QComboBox::*)(int index)>(&QComboBox::currentIndexChanged),
+            this, &MainWindow::inputTypeComboBoxChanged);
+    connect(ui->inputFileBrowseButton, &QPushButton::clicked, this, &MainWindow::filePickerAction);
 }
 
 /** Main window destructor */
@@ -102,8 +107,18 @@ void MainWindow::updateSelected()
 void MainWindow::publishAction()
 {
     try{
-        mqttclient->send_message(ui->topicLineEdit->text().toStdString(),
-                                 ui->sendTextEdit->toPlainText().toStdString());
+        if (ui->combobox_inputType->currentIndex() == 1){
+            if (ui->inputFilenameLineEdit->text().isEmpty()){
+                throw std::invalid_argument("File path is empty");
+            }
+            std::ifstream infile(ui->inputFilenameLineEdit->text().toStdString(), std::ios::binary);
+            std::string content((std::istreambuf_iterator<char>(infile)), (std::istreambuf_iterator<char>()));
+            mqttclient->send_message(ui->topicLineEdit->text().toStdString(),
+                                     content);
+        } else {
+            mqttclient->send_message(ui->topicLineEdit->text().toStdString(),
+                                     ui->inputTextEdit->toPlainText().toStdString());
+        }
     } catch (mqtt::exception& error) {
         QMessageBox errorBox;
         std::string message = std::string("Error sending message\n") + error.what();
@@ -171,4 +186,23 @@ void MainWindow::closeEvent(QCloseEvent *event)
 {
     mqttclient->stop();
     QMainWindow::closeEvent(event);
+}
+/*
+ * Switch between text and file input widget
+ */
+void MainWindow::inputTypeComboBoxChanged(int index) {
+    if (index == 1){
+        ui->stackedWidget_input->setCurrentWidget(ui->fileInputPage);
+    } else {
+        ui->stackedWidget_input->setCurrentWidget(ui->textInputPage);
+    }
+}
+
+/*
+ * Open file picker and save resulting path
+ */
+void MainWindow::filePickerAction(){
+    auto fileName = QFileDialog::getOpenFileName(this,
+                                                            tr("Select file"));
+    ui->inputFilenameLineEdit->setText(fileName);
 }

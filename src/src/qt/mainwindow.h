@@ -36,11 +36,14 @@ public slots:
     void disconnectAction();
     void publishAction();
     void saveButtonAction();
+    void inputTypeComboBoxChanged(int index);
+    void filePickerAction();
 
 private:
     Ui::MainWindow *ui;
 
     void closeEvent(QCloseEvent *event) override;
+
 };
 
 #endif // MAINWINDOW_H
