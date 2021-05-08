@@ -1,3 +1,7 @@
+/** @file messageviewwidget.h
+ *  @author Radek Manak (xmanak20)
+ *  @author Branislav Brezani (xbreza01)
+ */
 #ifndef MESSAGEVIEWWIDGET_H
 #define MESSAGEVIEWWIDGET_H
 

@@ -6,6 +6,7 @@
 #include "mainwindow.h"
 #include <QMessageBox>
 #include <utility>
+#include <QSettings>
 #include "ui_mainwindow.h"
 
 /** Main window constructor */
@@ -26,6 +27,11 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->treeView->setSelectionMode(QAbstractItemView::SingleSelection);
     connect(ui->pushButton_publish, &QPushButton::clicked, this, &MainWindow::publishAction);
     topicHistoryItemDelegate = new TopicHistoryItemDelegate(this);
+    connect(ui->save_button, &QPushButton::clicked, this, &MainWindow::saveButtonAction);
+    ui->lineEdit_host->setText(settings.value("login/hostname").toString());
+    ui->lineEdit_port->setText(settings.value("login/port").toString());
+    ui->lineEdit_username->setText(settings.value("login/username").toString());
+    ui->lineEdit_password->setText(settings.value("login/password").toString());
 }
 
 /** Main window destructor */
@@ -140,6 +146,13 @@ void MainWindow::connectAction()
         errorBox.setIcon(QMessageBox::Critical);
         errorBox.exec();
     }
+}
+
+void MainWindow::saveButtonAction(){
+    settings.setValue("login/hostname", ui->lineEdit_host->text());
+    settings.setValue("login/port", ui->lineEdit_port->text());
+    settings.setValue("login/username", ui->lineEdit_username->text());
+    settings.setValue("login/password", ui->lineEdit_password->text());
 }
 
 /**

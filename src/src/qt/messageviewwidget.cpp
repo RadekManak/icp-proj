@@ -1,3 +1,7 @@
+/** @file messageviewwidget.cpp
+ *  @author Radek Manak (xmanak20)
+ *  @author Branislav Brezani (xbreza01)
+ */
 #include "messageviewwidget.h"
 #include "ui_messageviewwidget.h"
 
