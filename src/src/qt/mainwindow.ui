@@ -391,26 +391,13 @@
                     </widget>
                    </item>
                    <item>
-                    <widget class="QWidget" name="widget_4" native="true">
+                    <widget class="MessageViewWidget" name="messageView" native="true">
                      <property name="minimumSize">
                       <size>
                        <width>0</width>
                        <height>100</height>
                       </size>
                      </property>
-                     <widget class="QLabel" name="viewLabel">
-                      <property name="geometry">
-                       <rect>
-                        <x>10</x>
-                        <y>10</y>
-                        <width>451</width>
-                        <height>81</height>
-                       </rect>
-                      </property>
-                      <property name="text">
-                       <string/>
-                      </property>
-                     </widget>
                     </widget>
                    </item>
                    <item>
@@ -539,6 +526,14 @@
    </attribute>
   </widget>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>MessageViewWidget</class>
+   <extends>QWidget</extends>
+   <header>messageviewwidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

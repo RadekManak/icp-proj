@@ -83,9 +83,9 @@ void MainWindow::updateSelected()
         QModelIndex item = selected_indexes.at(0);
         auto* ptr = item.data(Qt::UserRole + 1).value<Topicdata*>();
         if (ptr != nullptr){
-            ui->viewLabel->setText(QString(ptr->latest->payload.data()));
+            ui->messageView->setMessage(ptr->latest);
         } else {
-            ui->viewLabel->setText("");
+            ui->messageView->setMessage(nullptr);
         }
     }
 }
