@@ -135,7 +135,8 @@ bool MainWindow::setClient(std::shared_ptr<Mqttclient> client)
 void MainWindow::connectAction()
 {
     try {
-        mqttclient->connect(ui->lineEdit_host->text().toStdString(), ui->lineEdit_port->text().toStdString());
+        mqttclient->connect(ui->lineEdit_host->text().toStdString(), ui->lineEdit_port->text().toStdString(),
+        ui->lineEdit_username->text().toStdString(), ui->lineEdit_password->text().toStdString());
         ui->treeView->setModel(mqttclient->itemModel.get());
         connect(ui->treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &MainWindow::newSelection);
         ui->stackedWidget->setCurrentWidget(ui->explorer);

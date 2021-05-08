@@ -10,12 +10,7 @@
 #include <stdexcept>
 
 /** Connection options */
-Mqttclient::Mqttclient()
-{
-    connOpts = mqtt::connect_options_builder()
-        .clean_session(true)
-        .finalize();
-}
+Mqttclient::Mqttclient() = default;
 /** Quality of service */
 const int QOS = 1;
 /** Root topic name */
@@ -124,13 +119,24 @@ void Mqttclient::create_or_update_topic(QStandardItem& topicItem, mqtt::const_me
  * @param server_port Server port
  * @return Returns true at success
  */
-bool Mqttclient::connect(const std::string& server_address, std::string server_port)
+bool Mqttclient::connect(const std::string& server_address, std::string server_port, const std::string& username, const std::string& password)
 {
     std::string client_id = "icp-mqtt-explorer-vut-fit";
     if (server_port.empty()){
         server_port = "1883";
     }
     client = std::make_unique<mqtt::async_client>(server_address+":"+server_port, client_id);
+    if (username.empty()){
+        connOpts = mqtt::connect_options_builder()
+            .clean_session(true)
+            .finalize();
+    } else {
+        connOpts = mqtt::connect_options_builder()
+                .clean_session(true)
+                .user_name(username)
+                .password(password)
+                .finalize();
+    }
     client->set_callback(*this);
     itemModel = std::make_unique<QStandardItemModel>();
 

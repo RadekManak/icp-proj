@@ -37,7 +37,8 @@ class Mqttclient : public virtual mqtt::callback, public virtual mqtt::iaction_l
 public:
     std::unique_ptr<QStandardItemModel> itemModel;
     explicit Mqttclient();
-    bool connect(const std::string& server_address, std::string server_port);
+    bool connect(const std::string& server_address, std::string server_port,
+                 const std::string& username, const std::string& password);
     void stop();
     void send_message(const std::string& topic,const std::string& value);
 
