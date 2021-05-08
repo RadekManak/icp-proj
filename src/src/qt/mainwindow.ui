@@ -49,6 +49,21 @@
       </property>
       <widget class="QWidget" name="login">
        <layout class="QVBoxLayout" name="verticalLayout_2">
+        <property name="spacing">
+         <number>0</number>
+        </property>
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
         <item>
          <spacer name="verticalSpacer">
           <property name="orientation">
@@ -326,6 +341,21 @@
       </widget>
       <widget class="QWidget" name="explorer">
        <layout class="QVBoxLayout" name="verticalLayout_3">
+        <property name="spacing">
+         <number>0</number>
+        </property>
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
         <item>
          <widget class="QWidget" name="widget" native="true">
           <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -372,8 +402,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>990</width>
-                <height>651</height>
+                <width>1002</width>
+                <height>663</height>
                </rect>
               </property>
               <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -533,32 +563,71 @@
        </layout>
       </widget>
       <widget class="QWidget" name="dashboard">
-       <widget class="QPushButton" name="pushButton_disconnect_2">
-        <property name="geometry">
-         <rect>
-          <x>200</x>
-          <y>70</y>
-          <width>99</width>
-          <height>36</height>
-         </rect>
+       <layout class="QVBoxLayout" name="verticalLayout_7">
+        <property name="spacing">
+         <number>0</number>
         </property>
-        <property name="text">
-         <string>Disconnect</string>
+        <property name="leftMargin">
+         <number>0</number>
         </property>
-       </widget>
-       <widget class="QPushButton" name="pushButton_explorer">
-        <property name="geometry">
-         <rect>
-          <x>70</x>
-          <y>70</y>
-          <width>101</width>
-          <height>36</height>
-         </rect>
+        <property name="topMargin">
+         <number>0</number>
         </property>
-        <property name="text">
-         <string>tree view</string>
+        <property name="rightMargin">
+         <number>0</number>
         </property>
-       </widget>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QWidget" name="widget_5" native="true">
+          <layout class="QHBoxLayout" name="horizontalLayout_8">
+           <item>
+            <spacer name="horizontalSpacer_5">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QPushButton" name="pushButton_explorer">
+             <property name="minimumSize">
+              <size>
+               <width>95</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Explorer</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="pushButton_disconnect_2">
+             <property name="text">
+              <string>Disconnect</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QWidget" name="widget_6" native="true">
+          <layout class="QGridLayout" name="gridLayout_2">
+           <item row="0" column="0">
+            <widget class="QTableWidget" name="tableWidget"/>
+           </item>
+          </layout>
+         </widget>
+        </item>
+       </layout>
       </widget>
      </widget>
     </item>

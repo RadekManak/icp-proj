@@ -80,6 +80,8 @@ void MainWindow::newSelection(const QItemSelection &selected, const QItemSelecti
             }
             ui->topicLineEdit->setText(topic_path.data());
             connect(ptr, &Topicdata::data_changed, this, &MainWindow::updateSelected);
+        } else {
+            ui->listView->setModel(nullptr);
         }
     }
 }
@@ -187,7 +189,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     mqttclient->stop();
     QMainWindow::closeEvent(event);
 }
-/*
+/**
  * Switch between text and file input widget
  */
 void MainWindow::inputTypeComboBoxChanged(int index) {
@@ -198,7 +200,7 @@ void MainWindow::inputTypeComboBoxChanged(int index) {
     }
 }
 
-/*
+/**
  * Open file picker and save resulting path
  */
 void MainWindow::filePickerAction(){
