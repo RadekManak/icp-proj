@@ -32,7 +32,6 @@ void MessageViewDialog::setMessage(TopicMessage *message) {
     ui->timestamp->setText(timestamptext);
     auto * image = new QPixmap();
     uint len = message->payload.length()*sizeof(uchar);
-    std::cout << len << std::endl;
     const uchar *buf = (uchar*)message->payload.data();
     if (image->loadFromData(buf, len, nullptr, Qt::AutoColor)){
         ui->stackedWidget->setCurrentIndex(1);

@@ -29,6 +29,7 @@ void Mqttclient::on_success(const mqtt::token& asyncActionToken) {}
 void Mqttclient::connected(const std::string& what)
 {
     client->subscribe(TOPIC, QOS);
+    std::cout << "Connected\n";
 }
 
 /**
@@ -141,7 +142,7 @@ bool Mqttclient::connect(const std::string& server_address, std::string server_p
     itemModel = std::make_unique<QStandardItemModel>();
 
     try {
-        std::cout << "Connecting to the MQTT server..." << std::flush;
+        std::cout << "Connecting to the MQTT server...\n" << std::flush;
         client->connect(connOpts, nullptr, *this)->wait();
     }
     catch (const mqtt::exception& exc) {
