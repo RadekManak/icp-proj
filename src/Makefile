@@ -8,7 +8,8 @@ build:
 	make -C build
 
 clean:
-	rm -rf build/
+	rm -rf *build*/
+	rm -rf doc
 
 run: build
 	cd build && ./mqtt-explorer-fit

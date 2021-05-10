@@ -16,7 +16,6 @@ This project focuses on utilizing the MQTT protocol using client library Eclipse
 This program is a MQTT client with GUI that provides structured overview of topics and allows publishing.
 Unimplemented features:
 - Messages filtering
-- Recognize images from binary data
 - Explorer state saving
 - Dashboard
 
