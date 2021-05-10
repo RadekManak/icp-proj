@@ -3,20 +3,24 @@
 all: build
 
 build:
-	cd src && make build
+	mkdir -p build
+	cmake -B build
+	make -C build
 
 clean:
-	cd src && make clean
+	rm -rf *build*/
+	rm -rf doc
 
 run: build
-	cd src && make run
+	cd build && ./mqtt-explorer-fit
 
 sim: build
-	cd src && make sim
+	cd build && ./trafficSimulator
 
 doxygen:
-	cd src && make doxygen
+	doxygen Doxyfile
+	doxygen simDoxyfile
 
 pack:
 	make clean
-	zip -r 1-xmanak20-xbreza01.zip Makefile src README.md
+	zip -r 1-xmanak20-xbreza01.zip *
