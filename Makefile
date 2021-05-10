@@ -23,4 +23,4 @@ doxygen:
 
 pack:
 	make clean
-	zip -r 1-xmanak20-xbreza01.zip *
+	zip -r 1-xmanak20-xbreza01.zip src sim simDoxyfile Makefile Doxyfile CMakeLists.txt README.md
