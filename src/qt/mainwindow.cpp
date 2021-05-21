@@ -11,6 +11,7 @@
 #include <fstream>
 #include "ui_mainwindow.h"
 #include "dashboarditem.h"
+#include "dashboardarrangedialog.h"
 
 /** Main window constructor */
 MainWindow::MainWindow(QWidget *parent) :
@@ -50,6 +51,7 @@ MainWindow::MainWindow(QWidget *parent) :
     }
     auto item = new DashBoardItem();
     ui->dashboardGridlayout->addWidget(item, 5, 0, 1, 2);
+    connect(ui->editDashboardButton, &QToolButton::clicked, this, &MainWindow::dashBoardEditButtonAction);
 }
 
 /** Main window destructor */
@@ -220,4 +222,9 @@ void MainWindow::filePickerAction(){
     auto fileName = QFileDialog::getOpenFileName(this,
                                                             tr("Select file"));
     ui->inputFilenameLineEdit->setText(fileName);
+}
+
+void MainWindow::dashBoardEditButtonAction(){
+    auto Dialog = new DashboardArrangeDialog(this);
+    Dialog->show();
 }

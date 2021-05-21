@@ -402,8 +402,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>398</width>
-                <height>92</height>
+                <width>1264</width>
+                <height>656</height>
                </rect>
               </property>
               <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -594,6 +594,13 @@
               </size>
              </property>
             </spacer>
+           </item>
+           <item>
+            <widget class="QToolButton" name="editDashboardButton">
+             <property name="text">
+              <string>Edit</string>
+             </property>
+            </widget>
            </item>
            <item>
             <widget class="QPushButton" name="pushButton_explorer">

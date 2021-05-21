@@ -38,6 +38,7 @@ public slots:
     void saveButtonAction();
     void inputTypeComboBoxChanged(int index);
     void filePickerAction();
+    void dashBoardEditButtonAction();
 
 private:
     Ui::MainWindow *ui;
