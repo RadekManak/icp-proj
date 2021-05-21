@@ -10,6 +10,7 @@
 #include <QFileDialog>
 #include <fstream>
 #include "ui_mainwindow.h"
+#include "dashboarditem.h"
 
 /** Main window constructor */
 MainWindow::MainWindow(QWidget *parent) :
@@ -20,9 +21,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(ui->connect_button, &QPushButton::clicked, this, [&](){connectAction();});
     connect(ui->pushButton_disconnect, &QPushButton::clicked, this, [&](){disconnectAction();});
-    connect(ui->pushButton_disconnect_2, &QPushButton::clicked, this, [&](){disconnectAction();});
-    connect(ui->pushButton_explorer, &QPushButton::clicked, this,
-            [&](){ui->stackedWidget->setCurrentWidget(ui->explorer);});
     connect(ui->pushButton_dashboard, &QPushButton::clicked, this,
             [&](){ui->stackedWidget->setCurrentWidget(ui->dashboard);});
     ui->treeView->setHeaderHidden(true);
@@ -37,6 +35,21 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->combobox_inputType, static_cast<void (QComboBox::*)(int index)>(&QComboBox::currentIndexChanged),
             this, &MainWindow::inputTypeComboBoxChanged);
     connect(ui->inputFileBrowseButton, &QPushButton::clicked, this, &MainWindow::filePickerAction);
+
+    //Dashboard
+    connect(ui->pushButton_explorer, &QPushButton::clicked, this,
+            [&](){ui->stackedWidget->setCurrentWidget(ui->explorer);});
+    connect(ui->pushButton_disconnect_2, &QPushButton::clicked, this, [&](){disconnectAction();});
+
+    // TODO LOAD FROM FILE
+    for (int i = 0; i< 4 ;i++){
+        for (int j = 0; j < 4-2*i; j++){
+            auto item = new DashBoardItem();
+            ui->dashboardGridlayout->addWidget(item, i, j, 1, 1);
+        }
+    }
+    auto item = new DashBoardItem();
+    ui->dashboardGridlayout->addWidget(item, 5, 0, 1, 2);
 }
 
 /** Main window destructor */
