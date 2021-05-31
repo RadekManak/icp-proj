@@ -12,6 +12,7 @@
 #include "ui_mainwindow.h"
 #include "dashboarditemwidget.h"
 #include "dashboardarrangedialog.h"
+#include "messageviewdialog.h"
 
 /** Main window constructor */
 MainWindow::MainWindow(QWidget *parent) :
@@ -28,6 +29,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->treeView->setSelectionMode(QAbstractItemView::SingleSelection);
     connect(ui->pushButton_publish, &QPushButton::clicked, this, &MainWindow::publishAction);
     topicHistoryItemDelegate = new TopicHistoryItemDelegate(this);
+    connect(ui->listView, &QListView::doubleClicked, this, &MainWindow::historyItemClicked);
     connect(ui->save_button, &QPushButton::clicked, this, &MainWindow::saveButtonAction);
     ui->lineEdit_host->setText(settings.value("login/hostname").toString());
     ui->lineEdit_port->setText(settings.value("login/port").toString());
@@ -242,4 +244,12 @@ void MainWindow::addDashBoardWidget(const DashboardItemData& data) {
     }
     auto* item = new DashboardItemWidget(ui->dashboardGridWidget, data, topicItem, mqttclient);
     ui->dashboardGridlayout->addWidget(item, data.row, data.column, 1, 1);
+}
+
+void MainWindow::historyItemClicked(const QModelIndex& index) {
+    MessageViewDialog* messageViewDialog = new MessageViewDialog(this);
+    auto* ptr = index.data(Qt::UserRole + 1).value<TopicMessage*>();
+    messageViewDialog->setMessage(ptr);
+    messageViewDialog->setAttribute(Qt::WA_DeleteOnClose, true);
+    messageViewDialog->show();
 }

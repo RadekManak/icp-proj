@@ -43,6 +43,7 @@ public slots:
     void filePickerAction();
     void dashBoardEditButtonAction();
     void addDashBoardWidget(const DashboardItemData& data);
+    void historyItemClicked(const QModelIndex& index);
 
 private:
     Ui::MainWindow *ui;

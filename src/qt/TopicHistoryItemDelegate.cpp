@@ -49,7 +49,11 @@ void TopicHistoryItemDelegate::paint(QPainter *painter, const QStyleOptionViewIt
     painter->setPen(palette.text().color());
     TopicMessage* message = index.data(Qt::UserRole+1).value<TopicMessage*>();
     if (message != nullptr){
-        painter->drawText(rect, message->payload.data());
+        if (message->mime_type == "image/png"){
+            painter->drawText(rect, "Image");
+        } else {
+            painter->drawText(rect, message->payload.data());
+        }
     }
 
     painter->restore();
@@ -63,13 +67,4 @@ QSize TopicHistoryItemDelegate::sizeHint(const QStyleOptionViewItem &option, con
 TopicHistoryItemDelegate::TopicHistoryItemDelegate(QObject *parent)
 {
     setParent(parent);
-}
-
-QWidget *TopicHistoryItemDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
-{
-    auto* dialog = new MessageViewDialog(parent);
-    auto* message = index.data(Qt::UserRole+1).value<TopicMessage*>();
-    dialog->setMessage(message);
-
-    return dialog;
 }
