@@ -222,8 +222,14 @@ void MainWindow::filePickerAction(){
 }
 
 void MainWindow::dashBoardEditButtonAction(){
-    auto Dialog = new DashboardArrangeDialog(this);
-    Dialog->show();
+    if (dashboardDialog == nullptr){
+        dashboardDialog = new DashboardArrangeDialog(this);
+        dashboardDialog->setAttribute(Qt::WA_DeleteOnClose, true);
+        dashboardDialog->show();
+    } else {
+        dashboardDialog->raise();
+        dashboardDialog->setFocus();
+    }
 }
 
 void MainWindow::addDashBoardWidget(const DashboardItemData& data) {

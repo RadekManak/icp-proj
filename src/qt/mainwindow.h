@@ -11,6 +11,7 @@
 #include <QStandardItemModel>
 #include <QItemSelection>
 #include <QSettings>
+#include <QPointer>
 #include "TopicHistoryItemDelegate.h"
 #include "dashboarditemformdialog.h"
 #include "dashboarditemwidget.h"
@@ -45,6 +46,7 @@ public slots:
 
 private:
     Ui::MainWindow *ui;
+    QPointer<QDialog> dashboardDialog;
 
     void closeEvent(QCloseEvent *event) override;
 
