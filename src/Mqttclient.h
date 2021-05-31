@@ -32,7 +32,6 @@ Q_DECLARE_METATYPE(Topicdata*)
 class Mqttclient : public virtual mqtt::callback, public virtual mqtt::iaction_listener, public virtual QObject{
     std::unique_ptr<mqtt::async_client> client;
     mqtt::connect_options connOpts;
-    std::thread client_thread;
 
 public:
     std::unique_ptr<QStandardItemModel> itemModel;

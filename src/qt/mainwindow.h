@@ -12,6 +12,8 @@
 #include <QItemSelection>
 #include <QSettings>
 #include "TopicHistoryItemDelegate.h"
+#include "dashboarditemformdialog.h"
+#include "dashboarditemwidget.h"
 
 namespace Ui {
 class MainWindow;
@@ -39,6 +41,7 @@ public slots:
     void inputTypeComboBoxChanged(int index);
     void filePickerAction();
     void dashBoardEditButtonAction();
+    void addDashBoardWidget(const DashboardItemData& data);
 
 private:
     Ui::MainWindow *ui;

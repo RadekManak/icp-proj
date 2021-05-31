@@ -14,6 +14,8 @@ class DashboardArrangeDialog : public QDialog
 public:
     explicit DashboardArrangeDialog(QWidget *parent = nullptr);
     ~DashboardArrangeDialog();
+public slots:
+    void tableDoubleClick(QModelIndex index);
 
 private:
     Ui::DashboardArrangeDialog *ui;

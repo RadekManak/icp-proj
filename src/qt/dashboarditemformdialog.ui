@@ -55,6 +55,11 @@
            <widget class="QComboBox" name="comboBox_type">
             <item>
              <property name="text">
+              <string>On/Off</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
               <string>Centered Oneline</string>
              </property>
             </item>
@@ -66,16 +71,6 @@
             <item>
              <property name="text">
               <string>MultiLine Send</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Light</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Door</string>
              </property>
             </item>
            </widget>
@@ -137,7 +132,7 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>165</width>
+            <width>481</width>
             <height>584</height>
            </rect>
           </property>
@@ -149,7 +144,7 @@
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_2">
               <item>
-               <widget class="QComboBox" name="comboBox">
+               <widget class="QComboBox" name="onoff_type_comboBox">
                 <item>
                  <property name="text">
                   <string>Light</string>
@@ -184,27 +179,27 @@
                </widget>
               </item>
               <item>
-               <widget class="QLineEdit" name="lineEdit"/>
+               <widget class="QLineEdit" name="onoff_state_topic"/>
               </item>
               <item>
                <widget class="QLabel" name="label_6">
-                <property name="text">
-                 <string>Off state message</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QLineEdit" name="lineEdit_2"/>
-              </item>
-              <item>
-               <widget class="QLabel" name="label_5">
                 <property name="text">
                  <string>On state message</string>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QLineEdit" name="lineEdit_3"/>
+               <widget class="QLineEdit" name="onoff_on_message"/>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_5">
+                <property name="text">
+                 <string>Off state message</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="onoff_off_message"/>
               </item>
              </layout>
             </widget>
@@ -216,7 +211,7 @@
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_7">
               <item>
-               <widget class="QCheckBox" name="checkBox">
+               <widget class="QCheckBox" name="controllable_checkbox">
                 <property name="text">
                  <string>Controllable</string>
                 </property>
@@ -230,27 +225,27 @@
                </widget>
               </item>
               <item>
-               <widget class="QLineEdit" name="lineEdit_4"/>
+               <widget class="QLineEdit" name="onoff_control_topic"/>
               </item>
               <item>
                <widget class="QLabel" name="label_8">
-                <property name="text">
-                 <string>Turn off command</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QLineEdit" name="lineEdit_5"/>
-              </item>
-              <item>
-               <widget class="QLabel" name="label_7">
                 <property name="text">
                  <string>Turn on command</string>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QLineEdit" name="lineEdit_6"/>
+               <widget class="QLineEdit" name="onoff_on_command"/>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_7">
+                <property name="text">
+                 <string>Turn off command</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="onoff_turnoff_command"/>
               </item>
              </layout>
             </widget>
@@ -293,9 +288,9 @@
        </spacer>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton_cancel">
+       <widget class="QPushButton" name="pushButton_previous">
         <property name="text">
-         <string>Cancel</string>
+         <string>Previous</string>
         </property>
        </widget>
       </item>

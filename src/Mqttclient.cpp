@@ -94,24 +94,27 @@ QStandardItem* Mqttclient::getTopicItem(QStandardItemModel *model, const std::st
  */
 void Mqttclient::create_or_update_topic(QStandardItem& topicItem, mqtt::const_message_ptr& msg)
 {
-    Topicdata* topic;
+    Topicdata* topicData;
     if (topicItem.data().isNull()){
         QVariant variant;
-        topic = new Topicdata();
-        variant.setValue(topic);
+        topicData = new Topicdata();
+        variant.setValue(topicData);
         topicItem.setData(variant);
     } else {
-        topic = topicItem.data().value<Topicdata*>();
+        topicData = topicItem.data().value<Topicdata*>();
     }
     TopicMessage* message = new TopicMessage();
     message->received_time = std::chrono::system_clock::now();
     message->payload = msg->get_payload();
-    if (message->payload.rfind("\x89\x50\x4E\x47\x0D\x0A\x1A\x0A", 0) == 0){
+    auto * image = new QPixmap();
+    uint len = message->payload.length()*sizeof(uchar);
+    const uchar *buf = (uchar*)message->payload.data();
+    if (image->loadFromData(buf, len, nullptr, Qt::AutoColor)){
         message->mime_type = "image/png";
     } else {
         message->mime_type = "text/plain";
     }
-    topic->add_message(message);
+    topicData->add_message(message);
 }
 
 /**

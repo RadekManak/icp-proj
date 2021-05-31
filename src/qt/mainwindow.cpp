@@ -10,7 +10,7 @@
 #include <QFileDialog>
 #include <fstream>
 #include "ui_mainwindow.h"
-#include "dashboarditem.h"
+#include "dashboarditemwidget.h"
 #include "dashboardarrangedialog.h"
 
 /** Main window constructor */
@@ -42,15 +42,12 @@ MainWindow::MainWindow(QWidget *parent) :
             [&](){ui->stackedWidget->setCurrentWidget(ui->explorer);});
     connect(ui->pushButton_disconnect_2, &QPushButton::clicked, this, [&](){disconnectAction();});
 
-    // TODO LOAD FROM FILE
-    for (int i = 0; i< 4 ;i++){
-        for (int j = 0; j < 4-2*i; j++){
-            auto item = new DashBoardItem();
-            ui->dashboardGridlayout->addWidget(item, i, j, 1, 1);
-        }
+    for (int i = 0; i<4;i++){
+        ui->dashboardGridlayout->setColumnStretch(i,1);
     }
-    auto item = new DashBoardItem();
-    ui->dashboardGridlayout->addWidget(item, 5, 0, 1, 2);
+    for (int i = 0; i<5;i++){
+        ui->dashboardGridlayout->setRowStretch(i,1);
+    }
     connect(ui->editDashboardButton, &QToolButton::clicked, this, &MainWindow::dashBoardEditButtonAction);
 }
 
@@ -227,4 +224,16 @@ void MainWindow::filePickerAction(){
 void MainWindow::dashBoardEditButtonAction(){
     auto Dialog = new DashboardArrangeDialog(this);
     Dialog->show();
+}
+
+void MainWindow::addDashBoardWidget(const DashboardItemData& data) {
+    QStandardItem* topicItem = mqttclient->getTopicItem(mqttclient->itemModel.get(), data.stateTopic);
+    if (topicItem->data().isNull()){
+        QVariant variant;
+        auto* topicData = new Topicdata();
+        variant.setValue(topicData);
+        topicItem->setData(variant);
+    }
+    auto* item = new DashboardItemWidget(ui->dashboardGridWidget, data, topicItem, mqttclient);
+    ui->dashboardGridlayout->addWidget(item, data.row, data.column, 1, 1);
 }

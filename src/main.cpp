@@ -14,7 +14,6 @@
  */
 
 #include "mainwindow.h"
-#include "Mqttclient.h"
 #include "QtWidgets"
 
 /**
