@@ -44,6 +44,9 @@ MainWindow::MainWindow(QWidget *parent) :
             [&](){ui->stackedWidget->setCurrentWidget(ui->explorer);});
     connect(ui->pushButton_disconnect_2, &QPushButton::clicked, this, [&](){disconnectAction();});
 
+    dashboardModel = std::make_shared<QStandardItemModel>();
+    dashboardModel->setRowCount(10);
+    dashboardModel->setColumnCount(4);
     for (int i = 0; i<4;i++){
         ui->dashboardGridlayout->setColumnStretch(i,1);
     }
@@ -171,6 +174,7 @@ void MainWindow::connectAction()
         ui->treeView->setModel(mqttclient->itemModel.get());
         connect(ui->treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &MainWindow::newSelection);
         ui->stackedWidget->setCurrentWidget(ui->explorer);
+        loadDashboard();
     } catch (mqtt::exception& error){
         QMessageBox errorBox;
         std::string message = std::string("Unable to connect to MQTT server\n") + error.what();
@@ -225,7 +229,7 @@ void MainWindow::filePickerAction(){
 
 void MainWindow::dashBoardEditButtonAction(){
     if (dashboardDialog == nullptr){
-        dashboardDialog = new DashboardArrangeDialog(this);
+        dashboardDialog = new DashboardArrangeDialog(this, dashboardModel);
         dashboardDialog->setAttribute(Qt::WA_DeleteOnClose, true);
         dashboardDialog->show();
     } else {
@@ -243,6 +247,11 @@ void MainWindow::addDashBoardWidget(const DashboardItemData& data) {
         topicItem->setData(variant);
     }
     auto* item = new DashboardItemWidget(ui->dashboardGridWidget, data, topicItem, mqttclient);
+    if (ui->dashboardGridlayout->itemAtPosition(data.row, data.column) != nullptr){
+        auto item = ui->dashboardGridlayout->itemAtPosition(data.row, data.column);
+        ui->dashboardGridlayout->removeItem(item);
+        item->widget()->deleteLater();
+    }
     ui->dashboardGridlayout->addWidget(item, data.row, data.column, 1, 1);
 }
 
@@ -252,4 +261,49 @@ void MainWindow::historyItemClicked(const QModelIndex& index) {
     messageViewDialog->setMessage(ptr);
     messageViewDialog->setAttribute(Qt::WA_DeleteOnClose, true);
     messageViewDialog->show();
+}
+
+void MainWindow::loadDashboard(){
+    auto* data = new DashboardItemData();
+    for (const auto& group: dashboardSettings.childGroups()){
+        dashboardSettings.beginGroup(group);
+        auto position = group.split('-');
+        data->row = position[0].toUInt();
+        data->column = position[1].toUInt();
+        data->name = dashboardSettings.value("name").toString().toStdString();
+        data->type = dashboardSettings.value("type").toString().toStdString();
+
+        data->onOffType = dashboardSettings.value("onOffType").toString().toStdString();
+        data->stateTopic = dashboardSettings.value("stateTopic").toString().toStdString();
+        data->offStateMessage = dashboardSettings.value("offStateMessage").toString().toStdString();
+        data->onStateMessage = dashboardSettings.value("onStateMessage").toString().toStdString();
+        data->controllable = dashboardSettings.value("controllable").toBool();
+        data->controlTopic = dashboardSettings.value("controlTopic").toString().toStdString();
+        data->turnOffCommand = dashboardSettings.value("turnOffCommand").toString().toStdString();
+        data->turnOnCommand = dashboardSettings.value("turnOnCommand").toString().toStdString();
+        dashboardSettings.endGroup();
+        auto *item = new QStandardItem(data->name.data());
+        QVariant variant;
+        variant.setValue(data);
+        item->setData(variant, Qt::UserRole+1);
+        dashboardModel->setItem(data->row, data->column, item);
+        addDashBoardWidget(*data);
+    }
+}
+
+void MainWindow::saveDashboardItemSettings(DashboardItemData data) {
+    auto group = std::to_string(data.row) + "-" + std::to_string(data.column);
+    dashboardSettings.beginGroup(group.data());
+    dashboardSettings.setValue("name", data.name.data());
+    dashboardSettings.setValue("type", data.type.data());
+
+    dashboardSettings.setValue("onOffType", data.onOffType.data());
+    dashboardSettings.setValue("stateTopic", data.stateTopic.data());
+    dashboardSettings.setValue("offStateMessage", data.offStateMessage.data());
+    dashboardSettings.setValue("onStateMessage", data.onStateMessage.data());
+    dashboardSettings.setValue("controllable", data.controllable);
+    dashboardSettings.setValue("controlTopic", data.controlTopic.data());
+    dashboardSettings.setValue("turnOffCommand", data.turnOffCommand.data());
+    dashboardSettings.setValue("turnOffCommand", data.turnOffCommand.data());
+    dashboardSettings.endGroup();
 }

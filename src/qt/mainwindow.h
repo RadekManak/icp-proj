@@ -26,12 +26,14 @@ class MainWindow : public QMainWindow
     std::shared_ptr<Mqttclient> mqttclient;
     TopicHistoryItemDelegate* topicHistoryItemDelegate;
     QSettings settings{"xmanak20-xbreza01", "MQTT Explorer"};
+    QSettings dashboardSettings{"xmanak20-xbreza01", "MQTT Explorer-dashboard"};
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     bool setClient(std::shared_ptr<Mqttclient> ptr);
     void connectAction();
     ~MainWindow();
+    void saveDashboardItemSettings(DashboardItemData data);
 
 public slots:
     void newSelection(const QItemSelection &selected, const QItemSelection &deselected);
@@ -44,9 +46,11 @@ public slots:
     void dashBoardEditButtonAction();
     void addDashBoardWidget(const DashboardItemData& data);
     void historyItemClicked(const QModelIndex& index);
+    void loadDashboard();
 
 private:
     Ui::MainWindow *ui;
+    std::shared_ptr<QStandardItemModel> dashboardModel;
     QPointer<QDialog> dashboardDialog;
 
     void closeEvent(QCloseEvent *event) override;

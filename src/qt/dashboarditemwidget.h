@@ -21,6 +21,8 @@ struct DashboardItemData{
     std::string turnOnCommand;
 };
 
+Q_DECLARE_METATYPE(DashboardItemData*)
+
 namespace Ui {
 class DashboardItemWidget;
 }

@@ -2,15 +2,14 @@
 #include "ui_dashboardarrangedialog.h"
 #include "dashboarditemformdialog.h"
 
-DashboardArrangeDialog::DashboardArrangeDialog(QWidget *parent) :
+DashboardArrangeDialog::DashboardArrangeDialog(QWidget *parent, std::shared_ptr<QStandardItemModel> dashboardModel) :
     QDialog(parent),
     ui(new Ui::DashboardArrangeDialog)
 {
     ui->setupUi(this);
-    this->setWindowTitle("Edit Dashboard Layout");
-    ui->tableWidget->setRowCount(10);
-    ui->tableWidget->setColumnCount(4);
-    connect(ui->tableWidget, &QTableWidget::doubleClicked, this, &DashboardArrangeDialog::tableDoubleClick);
+    this->model = dashboardModel;
+    ui->tableView->setModel(dashboardModel.get());
+    connect(ui->tableView, &QTableView::doubleClicked, this, &DashboardArrangeDialog::tableDoubleClick);
 
 }
 
@@ -19,8 +18,8 @@ DashboardArrangeDialog::~DashboardArrangeDialog()
     delete ui;
 }
 
-void DashboardArrangeDialog::tableDoubleClick(QModelIndex model) {
-    auto* dialog = new DashboardItemFormDialog(this, model);
+void DashboardArrangeDialog::tableDoubleClick(QModelIndex index) {
+    auto* dialog = new DashboardItemFormDialog(this, model, index);
     dialog->setAttribute(Qt::WA_DeleteOnClose, true);
     dialog->show();
 }
