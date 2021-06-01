@@ -12,7 +12,8 @@ set(REQUIRED_LIBS Core Gui Widgets)
 set(REQUIRED_LIBS_QUALIFIED Qt5::Core Qt5::Gui Qt5::Widgets)
 add_executable(${PROJECT_NAME} src/main.cpp src/qt/dashboarditemwidget.cpp src/qt/mainwindow.cpp src/Mqttclient.cpp src/qt/TopicHistoryItemDelegate.cpp
 		src/qt/TopicHistoryItemDelegate.h src/qt/messageviewdialog.cpp src/qt/messageviewwidget.cpp src/qt/dashboardarrangedialog.cpp
-		src/qt/dashboarditemformdialog.cpp)
+		src/qt/dashboarditemformdialog.cpp
+		src/qrc/resources.qrc)
 target_include_directories(${PROJECT_NAME} PUBLIC src src/qt)
 
 add_executable(trafficSimulator src/trafficSimulator.cpp)

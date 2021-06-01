@@ -20,6 +20,19 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    Q_INIT_RESOURCE(resources);
+
+    // Load demo dashboard if config file does not exist
+    QFile file(dashboardSettings.fileName());
+    if (!file.exists()){
+        QFile demo_dashboard(":/demo-dashboard.conf");
+        demo_dashboard.open(QIODevice::ReadOnly);
+        file.open(QIODevice::WriteOnly);
+        file.write(demo_dashboard.readAll());
+        file.flush();
+        dashboardSettings.sync();
+    }
+    file.close();
 
     connect(ui->connect_button, &QPushButton::clicked, this, [&](){connectAction();});
     connect(ui->pushButton_disconnect, &QPushButton::clicked, this, [&](){disconnectAction();});
