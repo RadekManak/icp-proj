@@ -272,8 +272,9 @@ void MainWindow::historyItemClicked(const QModelIndex& index) {
 }
 
 void MainWindow::loadDashboard(){
-    auto* data = new DashboardItemData();
+    DashboardItemData* data;
     for (const auto& group: dashboardSettings.childGroups()){
+        data = new DashboardItemData();
         dashboardSettings.beginGroup(group);
         auto position = group.split('-');
         data->row = position[0].toUInt();
@@ -312,7 +313,7 @@ void MainWindow::saveDashboardItemSettings(DashboardItemData data) {
     dashboardSettings.setValue("controllable", data.controllable);
     dashboardSettings.setValue("controlTopic", data.controlTopic.data());
     dashboardSettings.setValue("turnOffCommand", data.turnOffCommand.data());
-    dashboardSettings.setValue("turnOffCommand", data.turnOffCommand.data());
+    dashboardSettings.setValue("turnOnCommand", data.turnOnCommand.data());
     dashboardSettings.endGroup();
 }
 

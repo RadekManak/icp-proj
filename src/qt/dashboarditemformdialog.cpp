@@ -15,9 +15,18 @@ DashboardItemFormDialog::DashboardItemFormDialog(QWidget *parent, std::shared_pt
     ui->pushButton_previous->setVisible(false);
     connect(ui->pushButton_next, &QPushButton::clicked, this, &DashboardItemFormDialog::nextButton);
     connect(ui->pushButton_previous, &QPushButton::clicked, this, &DashboardItemFormDialog::previousButton);
-    auto* dashboardItemData = model->data(index, Qt::UserRole+1).value<DashboardItemData*>();
+    auto* dashboardItemData = model->data(this->index, Qt::UserRole+1).value<DashboardItemData*>();
     if (dashboardItemData != nullptr){
         ui->lineEdit_name->setText(dashboardItemData->name.data());
+        ui->comboBox_type->setCurrentText(dashboardItemData->type.data());
+        ui->subscribe_topic->setText(dashboardItemData->stateTopic.data());
+        ui->onoff_state_topic->setText(dashboardItemData->stateTopic.data());
+        ui->onoff_on_message->setText(dashboardItemData->onStateMessage.data());
+        ui->onoff_off_message->setText(dashboardItemData->offStateMessage.data());
+        ui->controllable_checkbox->setChecked(dashboardItemData->controllable);
+        ui->onoff_control_topic->setText(dashboardItemData->controlTopic.data());
+        ui->onoff_on_command->setText(dashboardItemData->turnOnCommand.data());
+        ui->onoff_turnoff_command->setText(dashboardItemData->turnOffCommand.data());
     }
 }
 

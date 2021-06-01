@@ -57,10 +57,14 @@ void DashboardItemWidget::updateWidget() {
 
 void DashboardItemWidget::updateCentered(){
     auto* message = topicDataPtr->latest;
-    QPixmap pixmap;
-    uint len = message->payload.length()*sizeof(uchar);
-    pixmap.loadFromData((uchar*)message->payload.data(), len);
-    ui->centeredLabel->setPixmap(pixmap.scaled(ui->centeredLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    if (message->mime_type == "image/png"){
+        QPixmap pixmap;
+        uint len = message->payload.length()*sizeof(uchar);
+        pixmap.loadFromData((uchar*)message->payload.data(), len);
+        ui->centeredLabel->setPixmap(pixmap.scaled(ui->centeredLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    } else {
+        ui->centeredLabel->setText(message->payload.data());
+    }
 }
 
 void DashboardItemWidget::button_clicked() {
