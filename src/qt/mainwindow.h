@@ -34,6 +34,7 @@ public:
     void connectAction();
     ~MainWindow();
     void saveDashboardItemSettings(DashboardItemData data);
+    static MainWindow* getMainWindow();
 
 public slots:
     void newSelection(const QItemSelection &selected, const QItemSelection &deselected);
@@ -45,6 +46,8 @@ public slots:
     void filePickerAction();
     void dashBoardEditButtonAction();
     void addDashBoardWidget(const DashboardItemData& data);
+    void removeDashboardWidget(int row, int collum);
+    void removeDashboardItemSettings(int row, int column);
     void historyItemClicked(const QModelIndex& index);
     void loadDashboard();
 

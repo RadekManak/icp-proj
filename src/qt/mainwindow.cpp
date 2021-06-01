@@ -255,6 +255,14 @@ void MainWindow::addDashBoardWidget(const DashboardItemData& data) {
     ui->dashboardGridlayout->addWidget(item, data.row, data.column, 1, 1);
 }
 
+void MainWindow::removeDashboardWidget(int row, int collumn){
+    if (ui->dashboardGridlayout->itemAtPosition(row, collumn) != nullptr){
+        auto item = ui->dashboardGridlayout->itemAtPosition(row, collumn);
+        ui->dashboardGridlayout->removeItem(item);
+        item->widget()->deleteLater();
+    }
+}
+
 void MainWindow::historyItemClicked(const QModelIndex& index) {
     MessageViewDialog* messageViewDialog = new MessageViewDialog(this);
     auto* ptr = index.data(Qt::UserRole + 1).value<TopicMessage*>();
@@ -306,4 +314,19 @@ void MainWindow::saveDashboardItemSettings(DashboardItemData data) {
     dashboardSettings.setValue("turnOffCommand", data.turnOffCommand.data());
     dashboardSettings.setValue("turnOffCommand", data.turnOffCommand.data());
     dashboardSettings.endGroup();
+}
+
+void MainWindow::removeDashboardItemSettings(int row, int column) {
+    auto group = std::to_string(row) + "-" + std::to_string(column);
+    dashboardSettings.beginGroup(group.data());
+    dashboardSettings.remove("");
+    dashboardSettings.endGroup();
+}
+
+MainWindow *MainWindow::getMainWindow() {
+    for (QWidget * window: QApplication::topLevelWidgets()){
+        if (auto* mainWindow = qobject_cast<MainWindow*>(window))
+            return mainWindow;
+    }
+    return nullptr;
 }

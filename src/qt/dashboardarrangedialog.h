@@ -18,6 +18,7 @@ public:
     ~DashboardArrangeDialog();
 public slots:
     void tableDoubleClick(QModelIndex index);
+    void deleteButtonClicked();
 
 private:
     Ui::DashboardArrangeDialog *ui;

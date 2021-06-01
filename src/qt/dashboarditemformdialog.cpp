@@ -26,15 +26,6 @@ DashboardItemFormDialog::~DashboardItemFormDialog()
     delete ui;
 }
 
-MainWindow* getMainWindow()
-{
-    for (QWidget * window: QApplication::topLevelWidgets()){
-        if (auto* mainWindow = qobject_cast<MainWindow*>(window))
-            return mainWindow;
-    }
-    return nullptr;
-}
-
 void DashboardItemFormDialog::nextButton() {
     if (ui->formPageWidget->currentWidget() == ui->main){
         if (ui->comboBox_type->currentText() == "On/Off"){
@@ -64,8 +55,8 @@ void DashboardItemFormDialog::nextButton() {
                 dashboardItemData->turnOffCommand = ui->onoff_turnoff_command->text().toStdString();
             }
         }
-        getMainWindow()->addDashBoardWidget(*dashboardItemData);
-        getMainWindow()->saveDashboardItemSettings(*dashboardItemData);
+        MainWindow::getMainWindow()->addDashBoardWidget(*dashboardItemData);
+        MainWindow::getMainWindow()->saveDashboardItemSettings(*dashboardItemData);
         QStandardItem *item = model->itemFromIndex(index);
         QVariant variant;
         variant.setValue(dashboardItemData);
