@@ -168,7 +168,11 @@ color: rgb(0, 0, 0)</string>
         <number>0</number>
        </property>
        <item>
-        <widget class="QTextEdit" name="MultilineTextEdit"/>
+        <widget class="QTextEdit" name="MultilineTextEdit">
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>

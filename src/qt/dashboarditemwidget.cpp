@@ -25,6 +25,7 @@ DashboardItemWidget::DashboardItemWidget(QWidget *parent, DashboardItemData in_d
         ui->stackedWidgetContent->setCurrentWidget(ui->Multiline);
     } else if (data.type == "MultiLine Send"){
         ui->stackedWidgetContent->setCurrentWidget(ui->MultilineSend);
+        connect(ui->MultilineSendpushButton, &QPushButton::clicked, this, &DashboardItemWidget::sendButtonClicked);
     } else {
         std::cout << data.type << std::endl;
     }
@@ -48,6 +49,7 @@ void DashboardItemWidget::updateWidget() {
         case 1: //Multiline send
             break;
         case 2: //Multiline
+            updateMultiline();
             break;
         case 3: //OnOff
             updateOnOff();
@@ -97,4 +99,15 @@ void DashboardItemWidget::updateOnOff() {
         // Unknown message
         ui->OnOffImage->setText("Unrecognized state");
     }
+}
+
+void DashboardItemWidget::sendButtonClicked() {
+    if (!data.stateTopic.empty()){
+        client->send_message(data.stateTopic, ui->MultilineSendTextEdit->toPlainText().toStdString());
+    }
+    ui->MultilineSendTextEdit->clear();
+}
+
+void DashboardItemWidget::updateMultiline() {
+    ui->MultilineTextEdit->append(topicDataPtr->latest->payload.data());
 }
