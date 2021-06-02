@@ -41,7 +41,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->treeView->setHeaderHidden(true);
     ui->treeView->setSelectionMode(QAbstractItemView::SingleSelection);
     connect(ui->pushButton_publish, &QPushButton::clicked, this, &MainWindow::publishAction);
-    topicHistoryItemDelegate = new TopicHistoryItemDelegate(this);
     connect(ui->listView, &QListView::doubleClicked, this, &MainWindow::historyItemClicked);
     connect(ui->save_button, &QPushButton::clicked, this, &MainWindow::saveButtonAction);
     ui->lineEdit_host->setText(settings.value("login/hostname").toString());
@@ -97,7 +96,6 @@ void MainWindow::newSelection(const QItemSelection &selected, const QItemSelecti
         updateSelected();
         if (ptr != nullptr){
             ui->listView->setModel(&ptr->messages);
-            ui->listView->setItemDelegate(topicHistoryItemDelegate);
             // Build topic path by traversing tree to root node
             std::string topic_path;
             if (item.isValid()){

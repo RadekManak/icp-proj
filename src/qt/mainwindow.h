@@ -12,7 +12,6 @@
 #include <QItemSelection>
 #include <QSettings>
 #include <QPointer>
-#include "TopicHistoryItemDelegate.h"
 #include "dashboarditemformdialog.h"
 #include "dashboarditemwidget.h"
 
@@ -24,7 +23,6 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
     std::shared_ptr<Mqttclient> mqttclient;
-    TopicHistoryItemDelegate* topicHistoryItemDelegate;
     QSettings settings{"xmanak20-xbreza01", "MQTT Explorer"};
     QSettings dashboardSettings{"xmanak20-xbreza01", "MQTT Explorer-dashboard"};
 

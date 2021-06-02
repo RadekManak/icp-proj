@@ -187,6 +187,17 @@ void Mqttclient::stop()
 void Topicdata::add_message(TopicMessage* message)
 {
     auto *messageItem = new QStandardItem();
+    time_t time = std::chrono::system_clock::to_time_t(message->received_time);
+    char * timestamptext = ctime(&time);
+    if (message->mime_type == "image/png"){
+        messageItem->setText(QString(timestamptext) + QString("Image data"));
+    } else {
+        auto messagePart = message->payload.substr(0, 50);
+        if (messagePart.size() == 50){
+            messagePart.append("...");
+        }
+        messageItem->setText((timestamptext + messagePart).data());
+    }
     QVariant variant;
     auto* topicMessage = message;
     variant.setValue(topicMessage);
