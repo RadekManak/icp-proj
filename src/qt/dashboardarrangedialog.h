@@ -1,3 +1,7 @@
+/** @file dashboardarrangedialog.h
+ *  @author Radek Manak (xmanak20)
+ *  @author Branislav Brezani (xbreza01)
+ */
 #ifndef DASHBOARDARRANGEDIALOG_H
 #define DASHBOARDARRANGEDIALOG_H
 

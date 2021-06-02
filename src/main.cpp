@@ -1,11 +1,5 @@
 /** @mainpage Explorer
  * This program is a MQTT client with GUI that provides structured overview of topics and allows publishing.
- *
- * Unimplemented features:
- * 		- History
- * 		- Non-text messages recognition
- * 		- File saving
- * 		- Dashboard
  */
 
 /** @file main.cpp

@@ -1,3 +1,7 @@
+/** @file dashboarditemwidget.cpp
+ *  @author Radek Manak (xmanak20)
+ *  @author Branislav Brezani (xbreza01)
+ */
 #include <iostream>
 #include <utility>
 #include "dashboarditemwidget.h"

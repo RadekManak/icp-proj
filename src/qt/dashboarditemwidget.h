@@ -1,3 +1,7 @@
+/** @file dashboarditemwidget.h
+ *  @author Radek Manak (xmanak20)
+ *  @author Branislav Brezani (xbreza01)
+ */
 #ifndef DASHBOARDITEM_H
 #define DASHBOARDITEM_H
 

@@ -1,3 +1,7 @@
+/** @file dashboarditemformdialog.cpp
+ *  @author Radek Manak (xmanak20)
+ *  @author Branislav Brezani (xbreza01)
+ */
 #include <iostream>
 #include <QMainWindow>
 #include <utility>

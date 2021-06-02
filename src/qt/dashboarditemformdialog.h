@@ -1,3 +1,7 @@
+/** @file dashboarditemformdialog.h
+ *  @author Radek Manak (xmanak20)
+ *  @author Branislav Brezani (xbreza01)
+ */
 #ifndef DASHBOARDITEMDELEGATE_H
 #define DASHBOARDITEMDELEGATE_H
 
