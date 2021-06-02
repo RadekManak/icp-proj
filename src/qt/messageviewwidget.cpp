@@ -18,6 +18,10 @@ MessageViewWidget::~MessageViewWidget()
     delete ui;
 }
 
+/**
+ * Show text or image on view
+ * @param message
+ */
 void MessageViewWidget::setMessage(TopicMessage *message) {
     if (message == nullptr){
         ui->textEdit->setText("");

@@ -39,6 +39,9 @@ DashboardItemFormDialog::~DashboardItemFormDialog()
     delete ui;
 }
 
+/**
+ * Switch pages. Save widget on last page
+ */
 void DashboardItemFormDialog::nextButton() {
     if (ui->formPageWidget->currentWidget() == ui->main){
         if (ui->comboBox_type->currentText() == "On/Off"){
@@ -79,6 +82,9 @@ void DashboardItemFormDialog::nextButton() {
     }
 }
 
+/**
+ * Go back to the first page
+ */
 void DashboardItemFormDialog::previousButton() {
     ui->formPageWidget->setCurrentWidget(ui->main);
     ui->pushButton_next->setText("Next");

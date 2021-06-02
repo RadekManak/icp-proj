@@ -45,6 +45,9 @@ DashboardItemWidget::~DashboardItemWidget()
     delete ui;
 }
 
+/**
+ * Update shown widgets
+ */
 void DashboardItemWidget::updateWidget() {
     switch (ui->stackedWidgetContent->currentIndex()) {
         case 0: //Centered
@@ -53,7 +56,7 @@ void DashboardItemWidget::updateWidget() {
         case 1: //Multiline send
             break;
         case 2: //Multiline
-            updateMultiline();
+            appendMultiline();
             break;
         case 3: //OnOff
             updateOnOff();
@@ -61,6 +64,9 @@ void DashboardItemWidget::updateWidget() {
     }
 }
 
+/**
+ * Update centered widget with new data
+ */
 void DashboardItemWidget::updateCentered(){
     auto* message = topicDataPtr->latest;
     if (message->mime_type == "image/png"){
@@ -73,6 +79,9 @@ void DashboardItemWidget::updateCentered(){
     }
 }
 
+/**
+ * Send on/off command when button is clicked
+ */
 void DashboardItemWidget::button_clicked() {
     QObject* obj = sender();
     if (obj == ui->OnOffpushButton_on){
@@ -82,6 +91,9 @@ void DashboardItemWidget::button_clicked() {
     }
 }
 
+/**
+ * Update on/off widget with its user friendly message
+ */
 void DashboardItemWidget::updateOnOff() {
     if (topicDataPtr->latest->payload == data.onStateMessage){
         if (data.onOffType == "Light"){
@@ -105,6 +117,9 @@ void DashboardItemWidget::updateOnOff() {
     }
 }
 
+/**
+ * Send message and clear input TextEdit
+ */
 void DashboardItemWidget::sendButtonClicked() {
     if (!data.stateTopic.empty()){
         client->send_message(data.stateTopic, ui->MultilineSendTextEdit->toPlainText().toStdString());
@@ -112,6 +127,9 @@ void DashboardItemWidget::sendButtonClicked() {
     ui->MultilineSendTextEdit->clear();
 }
 
-void DashboardItemWidget::updateMultiline() {
+/**
+ * Append new message to multiline widget
+ */
+void DashboardItemWidget::appendMultiline() {
     ui->MultilineTextEdit->append(topicDataPtr->latest->payload.data());
 }

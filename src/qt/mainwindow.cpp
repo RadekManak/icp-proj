@@ -195,6 +195,9 @@ void MainWindow::connectAction()
     }
 }
 
+/**
+ * Stores login data in configuration file
+ */
 void MainWindow::saveButtonAction(){
     settings.setValue("login/hostname", ui->lineEdit_host->text());
     settings.setValue("login/port", ui->lineEdit_port->text());
@@ -238,6 +241,9 @@ void MainWindow::filePickerAction(){
     ui->inputFilenameLineEdit->setText(fileName);
 }
 
+/**
+ * Create or raise dashboard edit dialog
+ */
 void MainWindow::dashBoardEditButtonAction(){
     if (dashboardDialog == nullptr){
         dashboardDialog = new DashboardArrangeDialog(this, dashboardModel);
@@ -249,6 +255,10 @@ void MainWindow::dashBoardEditButtonAction(){
     }
 }
 
+/**
+ * Add new widget to dashboard layout or replace old
+ * @param data for widget
+ */
 void MainWindow::addDashBoardWidget(const DashboardItemData& data) {
     QStandardItem* topicItem = mqttclient->getTopicItem(mqttclient->itemModel.get(), data.stateTopic);
     if (topicItem->data().isNull()){
@@ -266,6 +276,11 @@ void MainWindow::addDashBoardWidget(const DashboardItemData& data) {
     ui->dashboardGridlayout->addWidget(item, data.row, data.column, 1, 1);
 }
 
+/**
+ * Remove widget from layout and delete it
+ * @param row
+ * @param collumn
+ */
 void MainWindow::removeDashboardWidget(int row, int collumn){
     if (ui->dashboardGridlayout->itemAtPosition(row, collumn) != nullptr){
         auto item = ui->dashboardGridlayout->itemAtPosition(row, collumn);
@@ -274,6 +289,10 @@ void MainWindow::removeDashboardWidget(int row, int collumn){
     }
 }
 
+/**
+ * Open dialog with full message
+ * @param index
+ */
 void MainWindow::historyItemClicked(const QModelIndex& index) {
     MessageViewDialog* messageViewDialog = new MessageViewDialog(this);
     auto* ptr = index.data(Qt::UserRole + 1).value<TopicMessage*>();
@@ -282,6 +301,9 @@ void MainWindow::historyItemClicked(const QModelIndex& index) {
     messageViewDialog->show();
 }
 
+/**
+ * Load full dashboard from configuration file
+ */
 void MainWindow::loadDashboard(){
     DashboardItemData* data;
     for (const auto& group: dashboardSettings.childGroups()){
@@ -311,6 +333,10 @@ void MainWindow::loadDashboard(){
     }
 }
 
+/**
+ * Save dashboard widget settings to configuration file
+ * @param data
+ */
 void MainWindow::saveDashboardItemSettings(DashboardItemData data) {
     auto group = std::to_string(data.row) + "-" + std::to_string(data.column);
     dashboardSettings.beginGroup(group.data());
@@ -328,6 +354,11 @@ void MainWindow::saveDashboardItemSettings(DashboardItemData data) {
     dashboardSettings.endGroup();
 }
 
+/**
+ * Remove dashboard widget data from configuration file
+ * @param row
+ * @param column
+ */
 void MainWindow::removeDashboardItemSettings(int row, int column) {
     auto group = std::to_string(row) + "-" + std::to_string(column);
     dashboardSettings.beginGroup(group.data());
@@ -335,6 +366,10 @@ void MainWindow::removeDashboardItemSettings(int row, int column) {
     dashboardSettings.endGroup();
 }
 
+/**
+ * Get pointer to MainWindow
+ * @return MainWindow*
+ */
 MainWindow *MainWindow::getMainWindow() {
     for (QWidget * window: QApplication::topLevelWidgets()){
         if (auto* mainWindow = qobject_cast<MainWindow*>(window))

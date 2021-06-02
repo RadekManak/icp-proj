@@ -24,12 +24,19 @@ DashboardArrangeDialog::~DashboardArrangeDialog()
     delete ui;
 }
 
+/**
+ * Opens full message in dialog
+ * @param index
+ */
 void DashboardArrangeDialog::tableDoubleClick(QModelIndex index) {
     auto* dialog = new DashboardItemFormDialog(this, model, index);
     dialog->setAttribute(Qt::WA_DeleteOnClose, true);
     dialog->show();
 }
 
+/**
+ * Removes currently selected dashboard widgets
+ */
 void DashboardArrangeDialog::deleteButtonClicked() {
     auto mainWindow = MainWindow::getMainWindow();
     for (auto index: ui->tableView->selectionModel()->selectedIndexes()){

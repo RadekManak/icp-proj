@@ -55,7 +55,7 @@ public slots:
 
     void sendButtonClicked();
 
-    void updateMultiline();
+    void appendMultiline();
 };
 
 #endif // DASHBOARDITEM_H
